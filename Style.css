@@ -240,3 +240,11 @@ footer {
     border: none;
     background: transparent;
   }
+
+/* Layout buttons in the Games modal vertically */
+.game-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+}

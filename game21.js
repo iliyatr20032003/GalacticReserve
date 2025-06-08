@@ -11,11 +11,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let dealerHand = [];
     let gameOver = false;
 
+    const suits = ['\u2660', '\u2665', '\u2666', '\u2663']; // spade, heart, diamond, club
+
     function createDeck() {
         deck = [];
         for (let i = 1; i <= 13; i++) {
             for (let j = 0; j < 4; j++) {
-                deck.push(i);
+                deck.push({ value: i, suit: suits[j] });
             }
         }
     }
@@ -26,15 +28,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function cardValue(card) {
-        if (card > 10) return 10;
-        return card;
+        if (card.value > 10) return 10;
+        return card.value;
     }
 
     function handValue(hand) {
         let total = 0;
         let aces = 0;
         hand.forEach(c => {
-            if (c === 1) aces++; else total += cardValue(c);
+            if (c.value === 1) aces++; else total += cardValue(c);
         });
         for (let i = 0; i < aces; i++) {
             if (total + 11 <= 21) {
@@ -48,16 +50,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function cardLabel(card) {
         const labels = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
-        return labels[card-1];
+        return labels[card.value - 1] + card.suit;
+    }
+
+    function createCardElement(card) {
+        const div = document.createElement('div');
+        div.className = 'card ' + ((card.suit === '\u2665' || card.suit === '\u2666') ? 'red' : 'black');
+        div.textContent = cardLabel(card);
+        return div;
+    }
+
+    function renderHand(el, hand, revealScore) {
+        el.innerHTML = '';
+        hand.forEach(c => el.appendChild(createCardElement(c)));
+        if (revealScore) {
+            const score = document.createElement('span');
+            score.className = 'hand-score';
+            score.textContent = `(${handValue(hand)})`;
+            el.appendChild(score);
+        }
     }
 
     function updateView() {
-        playerEl.textContent = `Player: ${playerHand.map(cardLabel).join(' ')} (${handValue(playerHand)})`;
-        if (gameOver) {
-            dealerEl.textContent = `Dealer: ${dealerHand.map(cardLabel).join(' ')} (${handValue(dealerHand)})`;
-        } else {
-            dealerEl.textContent = `Dealer: ${dealerHand.map(cardLabel).join(' ')}`;
-        }
+        renderHand(playerEl, playerHand, true);
+        renderHand(dealerEl, dealerHand, gameOver);
     }
 
     function endGame(message) {
