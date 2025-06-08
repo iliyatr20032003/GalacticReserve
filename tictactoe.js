@@ -258,8 +258,11 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         const cells = Array.from(boardEl.children);
-        cells.forEach(cell => {
-            const rect = cell.getBoundingClientRect();
+        // Capture the original positions of the cells before removing them from
+        // the grid so that they start falling from their correct spots
+        const rects = cells.map(cell => cell.getBoundingClientRect());
+        cells.forEach((cell, i) => {
+            const rect = rects[i];
             cell.style.position = 'absolute';
             cell.style.left = rect.left + 'px';
             cell.style.top = rect.top + 'px';
