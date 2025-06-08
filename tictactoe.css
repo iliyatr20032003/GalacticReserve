@@ -33,3 +33,16 @@
 .controls {
     margin-bottom: 10px;
 }
+
+/* Physics effect when the player loses */
+.board.physics {
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: visible;
+    height: 300px; /* allow cells to fall */
+}
+
+.board.physics .cell {
+    position: absolute;
+    pointer-events: none;
+}
