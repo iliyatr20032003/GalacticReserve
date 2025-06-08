@@ -34,15 +34,27 @@
     margin-bottom: 10px;
 }
 
-/* Physics effect when the player loses */
+/* Physics effect overlay when the player loses */
 .board.physics {
-    position: relative;
-    overflow-x: hidden;
-    overflow-y: visible;
-    height: 300px; /* allow cells to fall */
+    visibility: hidden;
 }
 
-.board.physics .cell {
-    position: absolute;
+.physics-overlay {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
     pointer-events: none;
+    z-index: 1000;
+}
+
+.physics-overlay .floor {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 20px;
+    background-color: #21262d;
 }
