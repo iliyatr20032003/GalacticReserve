@@ -9,6 +9,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let aiSymbol;
     let gameOver;
 
+    // Physics related variables
+    let engine;
+    let physicsCells = [];
+    let physicsActive = false;
+
     function createBoard() {
         boardEl.innerHTML = '';
         board = Array(9).fill(null);
@@ -22,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function restartGame() {
+        clearPhysics();
         createBoard();
         gameOver = false;
         if (Math.random() < 0.5) {
@@ -76,6 +82,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (winner) {
             statusEl.textContent = winner === 'draw' ? 'Draw!' : `${winner} wins!`;
             gameOver = true;
+            if (winner === aiSymbol) {
+                explodeBoard();
+            }
         }
     }
 
@@ -195,6 +204,69 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (bd.every(v => v)) return 'draw';
         return null;
+    }
+
+    function clearPhysics() {
+        if (!physicsActive) return;
+        physicsActive = false;
+        physicsCells.forEach(cell => {
+            if (cell._body) {
+                Matter.World.remove(engine.world, cell._body);
+                delete cell._body;
+            }
+            cell.remove();
+        });
+        physicsCells = [];
+        engine = null;
+    }
+
+    function explodeBoard() {
+        if (physicsActive) return;
+        physicsActive = true;
+        engine = Matter.Engine.create();
+        const world = engine.world;
+
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        const thickness = 100;
+
+        const boundaries = [
+            Matter.Bodies.rectangle(width/2, -thickness/2, width, thickness, {isStatic:true}),
+            Matter.Bodies.rectangle(width/2, height + thickness/2, width, thickness, {isStatic:true}),
+            Matter.Bodies.rectangle(-thickness/2, height/2, thickness, height, {isStatic:true}),
+            Matter.Bodies.rectangle(width + thickness/2, height/2, thickness, height, {isStatic:true})
+        ];
+        Matter.World.add(world, boundaries);
+
+        const cells = Array.from(boardEl.children);
+        cells.forEach(cell => {
+            const rect = cell.getBoundingClientRect();
+            cell.style.position = 'absolute';
+            cell.style.left = rect.left + 'px';
+            cell.style.top = rect.top + 'px';
+            cell.style.margin = '0';
+            cell.style.pointerEvents = 'none';
+            document.body.appendChild(cell);
+            const body = Matter.Bodies.rectangle(rect.left + rect.width/2, rect.top + rect.height/2, rect.width, rect.height, { restitution: 0.4 });
+            Matter.World.add(world, body);
+            Matter.Body.applyForce(body, body.position, { x: (Math.random()-0.5)*0.02, y: -Math.random()*0.03 });
+            cell._body = body;
+            cell._width = rect.width;
+            cell._height = rect.height;
+            physicsCells.push(cell);
+        });
+
+        Matter.Engine.run(engine);
+        (function update() {
+            if (!physicsActive) return;
+            Matter.Engine.update(engine, 1000/60);
+            physicsCells.forEach(cell => {
+                const pos = cell._body.position;
+                cell.style.left = (pos.x - cell._width/2) + 'px';
+                cell.style.top = (pos.y - cell._height/2) + 'px';
+            });
+            requestAnimationFrame(update);
+        })();
     }
 
     restartBtn.addEventListener('click', restartGame);
