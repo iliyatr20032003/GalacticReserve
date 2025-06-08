@@ -10,6 +10,7 @@
     grid-template-rows: repeat(3, 80px);
     gap: 5px;
     margin-bottom: 10px;
+    position: relative;
 }
 .cell {
     width: 80px;
@@ -32,4 +33,9 @@
 }
 .controls {
     margin-bottom: 10px;
+}
+
+.flying {
+    position: fixed;
+    pointer-events: none;
 }
