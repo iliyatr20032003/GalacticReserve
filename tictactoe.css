@@ -1,0 +1,32 @@
+.tt-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+}
+.board {
+    display: grid;
+    grid-template-columns: repeat(3, 80px);
+    grid-template-rows: repeat(3, 80px);
+    gap: 5px;
+    margin-bottom: 10px;
+}
+.cell {
+    width: 80px;
+    height: 80px;
+    background-color: #21262d;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 32px;
+    color: #58a6ff;
+    cursor: pointer;
+}
+.status {
+    font-size: 20px;
+    margin-top: 10px;
+    height: 24px;
+}
+.controls {
+    margin-bottom: 10px;
+}
