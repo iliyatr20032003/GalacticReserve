@@ -52,13 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function aiMove() {
         if (gameOver) return;
-        if (difficultyEl.value === 'cheater' && tryCheat()) {
-            if (!gameOver) {
-                currentPlayer = playerSymbol;
-                statusEl.textContent = 'Your move';
-            }
-            return;
-        }
         const index = chooseAIMove();
         if (index != null) {
             makeMove(index, aiSymbol);
@@ -83,34 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return board.map((v, i) => v ? null : i).filter(v => v !== null);
     }
 
-    function tryCheat() {
-        const playerCells = board
-            .map((v, i) => (v === playerSymbol ? i : null))
-            .filter(v => v !== null);
-        const empty = getAvailableMoves();
-        for (const from of playerCells) {
-            for (const to of empty) {
-                if (board[to]) continue;
-                const copy = board.slice();
-                copy[from] = aiSymbol;
-                copy[to] = playerSymbol;
-                if (checkWinner(copy) === aiSymbol) {
-                    board[from] = aiSymbol;
-                    boardEl.children[from].textContent = aiSymbol;
-                    board[to] = playerSymbol;
-                    boardEl.children[to].textContent = playerSymbol;
-                    const winner = checkWinner(board);
-                    if (winner) {
-                        statusEl.textContent = `${winner} wins!`;
-                        gameOver = true;
-                    }
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     function chooseAIMove() {
         const moves = getAvailableMoves();
         const diff = difficultyEl.value;
@@ -128,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             return move;
         }
-        if (diff === 'impossible' || diff === 'cheater') {
+        if (diff === 'impossible') {
             return bestMove();
         }
         const rand = Math.random();
