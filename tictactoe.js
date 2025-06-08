@@ -76,7 +76,58 @@ document.addEventListener('DOMContentLoaded', () => {
         if (winner) {
             statusEl.textContent = winner === 'draw' ? 'Draw!' : `${winner} wins!`;
             gameOver = true;
+            if (winner === aiSymbol) {
+                explodeBoard();
+            }
         }
+    }
+
+    function explodeBoard() {
+        const cells = Array.from(boardEl.children);
+        if (!cells.length) return;
+        const rect = boardEl.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const data = [];
+
+        cells.forEach(cell => {
+            const cRect = cell.getBoundingClientRect();
+            const x = cRect.left;
+            const y = cRect.top;
+            const vx = (cRect.left + cRect.width / 2 - centerX) * 0.05;
+            const vy = (cRect.top + cRect.height / 2 - centerY) * 0.05;
+            cell.classList.add('flying');
+            cell.style.left = x + 'px';
+            cell.style.top = y + 'px';
+            cell.style.width = cRect.width + 'px';
+            cell.style.height = cRect.height + 'px';
+            document.body.appendChild(cell);
+            data.push({el: cell, x, y, vx, vy, w: cRect.width, h: cRect.height});
+        });
+
+        const gravity = 0.3;
+        const damp = 0.8;
+        let start;
+        function frame(t) {
+            if (!start) start = t;
+            data.forEach(d => {
+                d.vy += gravity;
+                d.x += d.vx;
+                d.y += d.vy;
+                if (d.x <= 0) { d.x = 0; d.vx *= -damp; }
+                if (d.x + d.w >= window.innerWidth) { d.x = window.innerWidth - d.w; d.vx *= -damp; }
+                if (d.y <= 0) { d.y = 0; d.vy *= -damp; }
+                if (d.y + d.h >= window.innerHeight) { d.y = window.innerHeight - d.h; d.vy *= -damp; }
+                d.el.style.left = d.x + 'px';
+                d.el.style.top = d.y + 'px';
+            });
+            if (t - start < 3000) {
+                requestAnimationFrame(frame);
+            } else {
+                data.forEach(d => d.el.remove());
+            }
+        }
+        requestAnimationFrame(frame);
     }
 
     function getAvailableMoves() {
