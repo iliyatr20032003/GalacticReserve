@@ -21,6 +21,9 @@
     font-size: 32px;
     color: #58a6ff;
     cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    outline: none;
 }
 .status {
     font-size: 20px;
