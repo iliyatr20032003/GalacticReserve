@@ -278,6 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
             physicsCells.push(cell);
         });
 
+        Matter.Engine.run(engine);
         (function update() {
             if (!physicsActive) return;
             Matter.Engine.update(engine, 1000/60);
