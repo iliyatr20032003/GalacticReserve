@@ -17,7 +17,7 @@
         </div>
         <div class="bank-name">Galactic Reserve</div>
         <div class="nav-item" onclick="document.getElementById('investmentModal').style.display='flex'">Investment Strategies</div>
-        <div class="nav-item" onclick="location.href='tictactoe.html'">Tic-Tac-Toe</div>
+        <div class="nav-item" onclick="document.getElementById('gameModal').style.display='flex'">Games</div>
     </div>
     <div id="investmentModal" class="modal">
         <div class="modal-content">
@@ -30,6 +30,13 @@
                 <li><strong>Aggressive:</strong> High growth potential through investments in emerging markets and startups.</li>
                 <li><strong>High-Stakes:</strong> Targeting high-risk, high-return opportunities across galaxies, including speculative assets and ventures.</li>
             </ul>
+        </div>
+    </div>
+    <div id="gameModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('gameModal').style.display='none'">&times;</span>
+            <h2>Games</h2>
+            <button class="baton" onclick="location.href='tictactoe.html'">Tic-Tac-Toe</button>
         </div>
     </div>
     <div class="container">
