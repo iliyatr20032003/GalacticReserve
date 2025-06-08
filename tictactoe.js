@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function explodeBoard() {
         if (physicsActive) return;
         physicsActive = true;
-        physicsTimer = setTimeout(startPhysics, 2000);
+        physicsTimer = setTimeout(startPhysics, 1000);
     }
 
     function startPhysics() {
