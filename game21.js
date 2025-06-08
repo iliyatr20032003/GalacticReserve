@@ -76,6 +76,12 @@ document.addEventListener('DOMContentLoaded', () => {
         renderHand(dealerEl, dealerHand, gameOver);
     }
 
+    function checkAutoStand() {
+        if (!gameOver && handValue(playerHand) === 21) {
+            dealerPlay();
+        }
+    }
+
     function endGame(message) {
         gameOver = true;
         statusEl.textContent = message;
@@ -108,6 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
         standBtn.disabled = false;
         statusEl.textContent = 'Your move';
         updateView();
+        checkAutoStand();
     });
 
     hitBtn.addEventListener('click', () => {
@@ -117,6 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
             endGame('Bust! Dealer wins');
         } else {
             updateView();
+            checkAutoStand();
         }
     });
 
