@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let engine;
     let physicsCells = [];
     let physicsActive = false;
+    let physicsTimer = null;
 
     function createBoard() {
         boardEl.innerHTML = '';
@@ -208,6 +209,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function clearPhysics() {
         if (!physicsActive) return;
+        if (physicsTimer) {
+            clearTimeout(physicsTimer);
+            physicsTimer = null;
+        }
         physicsActive = false;
         physicsCells.forEach(cell => {
             if (cell._body) {
@@ -223,6 +228,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function explodeBoard() {
         if (physicsActive) return;
         physicsActive = true;
+        physicsTimer = setTimeout(startPhysics, 3000);
+    }
+
+    function startPhysics() {
+        physicsTimer = null;
         engine = Matter.Engine.create();
         const world = engine.world;
 
@@ -278,7 +288,6 @@ document.addEventListener('DOMContentLoaded', () => {
             physicsCells.push(cell);
         });
 
-        Matter.Engine.run(engine);
         (function update() {
             if (!physicsActive) return;
             Matter.Engine.update(engine, 1000/60);
