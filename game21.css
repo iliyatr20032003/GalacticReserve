@@ -6,6 +6,7 @@
 }
 .hand {
     margin: 10px 0;
+    display: flex;
 }
 .status {
     height: 24px;
@@ -14,4 +15,27 @@
 }
 .controls {
     margin-top: 10px;
+}
+
+.card {
+    width: 40px;
+    height: 60px;
+    border: 1px solid #000;
+    border-radius: 5px;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 5px;
+    font-size: 18px;
+}
+.card.red {
+    color: red;
+}
+.card.black {
+    color: black;
+}
+.hand-score {
+    margin-left: 10px;
+    align-self: center;
 }
