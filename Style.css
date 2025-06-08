@@ -89,7 +89,7 @@ input, button, select {
     transition: all 0.2s ease;
 }
 .baton:hover{
-    ackground-color: #30363d; /* Hover state */
+    background-color: #30363d; /* Hover state */
     color: #58a6ff;
 }
 button:hover {
