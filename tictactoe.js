@@ -8,6 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let playerSymbol;
     let aiSymbol;
     let gameOver;
+    let overlay;
+    let flyingPieces = [];
+    let flyingAnim;
 
     function createBoard() {
         boardEl.innerHTML = '';
@@ -22,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function restartGame() {
+        clearExplosion();
         createBoard();
         gameOver = false;
         if (Math.random() < 0.5) {
@@ -76,7 +80,78 @@ document.addEventListener('DOMContentLoaded', () => {
         if (winner) {
             statusEl.textContent = winner === 'draw' ? 'Draw!' : `${winner} wins!`;
             gameOver = true;
+            if (winner === aiSymbol) {
+                explodeBoard();
+            }
         }
+    }
+
+    function explodeBoard() {
+        if (overlay) return;
+        const cells = Array.from(boardEl.children);
+        if (!cells.length) return;
+        const rect = boardEl.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        overlay = document.createElement('div');
+        overlay.className = 'physics-overlay';
+        document.body.appendChild(overlay);
+        boardEl.style.visibility = 'hidden';
+
+        cells.forEach(cell => {
+            const clone = cell.cloneNode(true);
+            const cRect = cell.getBoundingClientRect();
+            const x = cRect.left;
+            const y = cRect.top;
+            const vx = (cRect.left + cRect.width / 2 - centerX) * 0.05;
+            const vy = (cRect.top + cRect.height / 2 - centerY) * 0.05;
+            clone.classList.add('flying');
+            clone.style.left = x + 'px';
+            clone.style.top = y + 'px';
+            clone.style.width = cRect.width + 'px';
+            clone.style.height = cRect.height + 'px';
+            overlay.appendChild(clone);
+            flyingPieces.push({el: clone, x, y, vx, vy, w: cRect.width, h: cRect.height});
+        });
+
+        const gravity = 0.4;
+        const damp = 0.8;
+        function frame() {
+            let moving = false;
+            flyingPieces.forEach(d => {
+                d.vy += gravity;
+                d.x += d.vx;
+                d.y += d.vy;
+                if (d.x <= 0) { d.x = 0; d.vx *= -damp; }
+                if (d.x + d.w >= window.innerWidth) { d.x = window.innerWidth - d.w; d.vx *= -damp; }
+                if (d.y + d.h >= window.innerHeight) {
+                    d.y = window.innerHeight - d.h;
+                    d.vy *= -damp;
+                    if (Math.abs(d.vy) < 0.5) d.vy = 0;
+                    if (Math.abs(d.vx) > 0.1) d.vx *= 0.98;
+                } else {
+                    moving = true;
+                }
+                if (Math.abs(d.vx) > 0.1 || Math.abs(d.vy) > 0.1) moving = true;
+                d.el.style.left = d.x + 'px';
+                d.el.style.top = d.y + 'px';
+            });
+            if (moving) {
+                flyingAnim = requestAnimationFrame(frame);
+            }
+        }
+        flyingAnim = requestAnimationFrame(frame);
+    }
+
+    function clearExplosion() {
+        if (flyingAnim) cancelAnimationFrame(flyingAnim);
+        flyingAnim = null;
+        flyingPieces.forEach(p => p.el.remove());
+        flyingPieces = [];
+        if (overlay) overlay.remove();
+        overlay = null;
+        boardEl.style.visibility = '';
     }
 
     function getAvailableMoves() {
