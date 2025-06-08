@@ -10,7 +10,6 @@
     grid-template-rows: repeat(3, 80px);
     gap: 5px;
     margin-bottom: 10px;
-    position: relative;
 }
 .cell {
     width: 80px;
@@ -33,20 +32,4 @@
 }
 .controls {
     margin-bottom: 10px;
-}
-
-.flying {
-    position: fixed;
-    pointer-events: none;
-}
-
-.physics-overlay {
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    pointer-events: none;
-    z-index: 1000;
 }
