@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let playerSymbol;
     let aiSymbol;
     let gameOver;
+    let physicsOverlay;
+    let physicsTimer;
 
     function createBoard() {
         boardEl.innerHTML = '';
@@ -22,6 +24,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function restartGame() {
+        if (physicsOverlay) {
+            clearInterval(physicsTimer);
+            physicsOverlay.remove();
+            physicsOverlay = null;
+            physicsTimer = null;
+        }
+        boardEl.classList.remove('physics');
+        boardEl.style.visibility = '';
+        boardEl.removeAttribute('style');
         createBoard();
         gameOver = false;
         if (Math.random() < 0.5) {
@@ -76,6 +87,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (winner) {
             statusEl.textContent = winner === 'draw' ? 'Draw!' : `${winner} wins!`;
             gameOver = true;
+            if (winner === aiSymbol && playerSymbol) {
+                explodeBoard();
+            }
         }
     }
 
@@ -195,6 +209,84 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (bd.every(v => v)) return 'draw';
         return null;
+    }
+
+    function explodeBoard() {
+        const rect = boardEl.getBoundingClientRect();
+        boardEl.classList.add('physics');
+        boardEl.style.visibility = 'hidden';
+
+        physicsOverlay = document.createElement('div');
+        physicsOverlay.className = 'physics-overlay';
+        const floorEl = document.createElement('div');
+        floorEl.className = 'floor';
+        physicsOverlay.appendChild(floorEl);
+        document.body.appendChild(physicsOverlay);
+
+        const overlayWidth = physicsOverlay.clientWidth;
+        const overlayHeight = physicsOverlay.clientHeight;
+        const floorHeight = floorEl.offsetHeight;
+
+        const cells = Array.from(boardEl.children);
+        if (!cells.length) return;
+        const cellSize = cells[0].offsetWidth;
+
+        const pieces = cells.map(cell => {
+            const r = cell.getBoundingClientRect();
+            const x = r.left;
+            const y = r.top;
+            cell.style.position = 'absolute';
+            cell.style.left = x + 'px';
+            cell.style.top = y + 'px';
+            physicsOverlay.appendChild(cell);
+            return {
+                el: cell,
+                x,
+                y,
+                vx: (Math.random() - 0.5) * 8,
+                vy: -Math.random() * 6,
+                rot: 0,
+                vr: (Math.random() - 0.5) * 10
+            };
+        });
+
+        let stillFrames = 0;
+        function step() {
+            let allStill = true;
+            pieces.forEach(p => {
+                p.vy += 0.3; // gravity
+                p.x += p.vx;
+                p.y += p.vy;
+                p.rot += p.vr;
+                if (p.x < 0) { p.x = 0; p.vx *= -0.7; }
+                if (p.x > overlayWidth - cellSize) { p.x = overlayWidth - cellSize; p.vx *= -0.7; }
+                const floorY = overlayHeight - floorHeight - cellSize;
+                if (p.y >= floorY) {
+                    p.y = floorY;
+                    if (Math.abs(p.vy) < 0.5) {
+                        p.vy = 0;
+                        p.vx *= 0.98;
+                        p.vr *= 0.95;
+                    } else {
+                        p.vy *= -0.5;
+                    }
+                } else {
+                    allStill = false;
+                }
+                if (Math.abs(p.vx) > 0.1 || Math.abs(p.vy) > 0.1) allStill = false;
+                p.el.style.transform = `translate(${p.x}px, ${p.y}px) rotate(${p.rot}deg)`;
+            });
+            if (allStill) {
+                stillFrames++;
+                if (stillFrames > 60) {
+                    clearInterval(physicsTimer);
+                }
+            } else {
+                stillFrames = 0;
+            }
+        }
+
+        physicsTimer = setInterval(step, 16);
     }
 
     restartBtn.addEventListener('click', restartGame);
