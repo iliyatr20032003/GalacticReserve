@@ -52,6 +52,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function aiMove() {
         if (gameOver) return;
+        if (difficultyEl.value === 'cheater' && tryCheat()) {
+            if (!gameOver) {
+                currentPlayer = playerSymbol;
+                statusEl.textContent = 'Your move';
+            }
+            return;
+        }
         const index = chooseAIMove();
         if (index != null) {
             makeMove(index, aiSymbol);
@@ -76,6 +83,49 @@ document.addEventListener('DOMContentLoaded', () => {
         return board.map((v, i) => v ? null : i).filter(v => v !== null);
     }
 
+    function hasWin(bd, symbol) {
+        const wins = [
+            [0,1,2],[3,4,5],[6,7,8],
+            [0,3,6],[1,4,7],[2,5,8],
+            [0,4,8],[2,4,6]
+        ];
+        return wins.some(([a, b, c]) => bd[a] === symbol && bd[b] === symbol && bd[c] === symbol);
+    }
+
+    function tryCheat() {
+        const playerCells = board
+            .map((v, i) => (v === playerSymbol ? i : null))
+            .filter(v => v !== null);
+        const empty = getAvailableMoves();
+        for (const from of playerCells) {
+            for (const to of empty) {
+                const copy = board.slice();
+                copy[from] = aiSymbol;
+                copy[to] = playerSymbol;
+                const aiWin = hasWin(copy, aiSymbol);
+                if (aiWin) {
+                    const playerWin = hasWin(copy, playerSymbol);
+                    board[from] = aiSymbol;
+                    boardEl.children[from].textContent = aiSymbol;
+                    board[to] = playerSymbol;
+                    boardEl.children[to].textContent = playerSymbol;
+                    let result;
+                    if (aiWin && playerWin) {
+                        result = 'draw';
+                    } else {
+                        result = aiSymbol;
+                    }
+                    if (result) {
+                        statusEl.textContent = result === 'draw' ? 'Draw!' : `${result} wins!`;
+                        gameOver = true;
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     function chooseAIMove() {
         const moves = getAvailableMoves();
         const diff = difficultyEl.value;
@@ -93,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             return move;
         }
-        if (diff === 'impossible') {
+        if (diff === 'impossible' || diff === 'cheater') {
             return bestMove();
         }
         const rand = Math.random();
