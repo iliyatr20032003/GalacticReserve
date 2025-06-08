@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function restartGame() {
+        boardEl.classList.remove('physics');
+        boardEl.removeAttribute('style');
         createBoard();
         gameOver = false;
         if (Math.random() < 0.5) {
@@ -76,6 +78,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (winner) {
             statusEl.textContent = winner === 'draw' ? 'Draw!' : `${winner} wins!`;
             gameOver = true;
+            if (winner === aiSymbol && playerSymbol) {
+                explodeBoard();
+            }
         }
     }
 
@@ -195,6 +200,57 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (bd.every(v => v)) return 'draw';
         return null;
+    }
+
+    function explodeBoard() {
+        const rect = boardEl.getBoundingClientRect();
+        boardEl.classList.add('physics');
+        boardEl.style.width = rect.width + 'px';
+        boardEl.style.height = rect.height + 'px';
+        boardEl.style.position = 'relative';
+        boardEl.style.pointerEvents = 'none';
+
+        const cells = Array.from(boardEl.children);
+        const cellSize = cells[0].offsetWidth;
+        const boardWidth = rect.width;
+        const boardHeight = rect.height;
+
+        const pieces = cells.map(cell => {
+            const r = cell.getBoundingClientRect();
+            const x = r.left - rect.left;
+            const y = r.top - rect.top;
+            cell.style.position = 'absolute';
+            cell.style.left = x + 'px';
+            cell.style.top = y + 'px';
+            return {
+                el: cell,
+                x,
+                y,
+                vx: (Math.random() - 0.5) * 8,
+                vy: -Math.random() * 6,
+                rot: 0,
+                vr: (Math.random() - 0.5) * 10
+            };
+        });
+
+        function step() {
+            pieces.forEach(p => {
+                p.vy += 0.3; // gravity
+                p.x += p.vx;
+                p.y += p.vy;
+                p.rot += p.vr;
+                if (p.x < 0) { p.x = 0; p.vx *= -0.7; }
+                if (p.x > boardWidth - cellSize) { p.x = boardWidth - cellSize; p.vx *= -0.7; }
+                p.el.style.transform = `translate(${p.x}px, ${p.y}px) rotate(${p.rot}deg)`;
+            });
+        }
+
+        const timer = setInterval(() => {
+            step();
+            if (pieces.every(p => p.y > boardHeight * 2)) {
+                clearInterval(timer);
+            }
+        }, 16);
     }
 
     restartBtn.addEventListener('click', restartGame);
