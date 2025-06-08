@@ -81,26 +81,7 @@
                 cell.addEventListener('click', () => handleMove(cell));
             });
 
-            restartBtn.addEventListener('click', startGame);
-
-            function startGame() {
-                board = Array(9).fill(null);
-                cells.forEach(cell => (cell.textContent = ''));
-                resultEl.textContent = '';
-
-                if (Math.random() < 0.5) {
-                    humanPlayer = 'X';
-                    aiPlayer = 'O';
-                    currentPlayer = humanPlayer;
-                    resultEl.textContent = 'You are X. Your turn!';
-                } else {
-                    humanPlayer = 'O';
-                    aiPlayer = 'X';
-                    currentPlayer = aiPlayer;
-                    resultEl.textContent = 'You are O. AI goes first!';
-                    setTimeout(aiMove, 500);
-                }
-            }
+            restartBtn.addEventListener('click', startGame)
 
             function handleMove(cell) {
                 const index = cell.dataset.index;
@@ -109,51 +90,6 @@
                 board[index] = humanPlayer;
                 cell.textContent = humanPlayer;
 
-                if (checkWin(humanPlayer)) {
-                    resultEl.textContent = 'You win!';
-                } else if (board.every(v => v)) {
-                    resultEl.textContent = 'Draw!';
-                } else {
-                    currentPlayer = aiPlayer;
-                    setTimeout(aiMove, 500);
-                }
-            }
-
-            function aiMove() {
-                if (resultEl.textContent) return;
-
-                const empty = board.map((v, i) => (v ? null : i)).filter(i => i !== null);
-                if (empty.length === 0) return;
-
-                const index = empty[Math.floor(Math.random() * empty.length)];
-                board[index] = aiPlayer;
-                cells[index].textContent = aiPlayer;
-
-                if (checkWin(aiPlayer)) {
-                    resultEl.textContent = 'AI wins!';
-                } else if (board.every(v => v)) {
-                    resultEl.textContent = 'Draw!';
-                } else {
-                    currentPlayer = humanPlayer;
-                }
-            }
-
-            function checkWin(player) {
-                const combos = [
-                    [0, 1, 2],
-                    [3, 4, 5],
-                    [6, 7, 8],
-                    [0, 3, 6],
-                    [1, 4, 7],
-                    [2, 5, 8],
-                    [0, 4, 8],
-                    [2, 4, 6]
-                ];
-                return combos.some(combo => combo.every(i => board[i] === player));
-            }
-
-            startGame();
-        });
     </script>
 </body>
 </html>
