@@ -156,16 +156,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     takeBtn.addEventListener('click', () => {
         if (state.defender !== 0 || !awaitingDefence) return;
-        state.players[0].hand.push(state.table[0].attack);
-        if (state.table[0].defence) state.players[0].hand.push(state.table[0].defence);
-        state.table = [];
         awaitingDefence = false;
-        DurakEngine.draw(state,0);
-        DurakEngine.draw(state,1);
-        DurakEngine.rotateRoles(state,false);
+        DurakEngine.endTurn(state, false);
         updateView();
         statusEl.textContent = 'You picked up';
-        if (state.attacker === 1) setTimeout(aiAttack,600);
+        if (state.attacker === 1) setTimeout(aiAttack, 600);
     });
 
     newGameBtn.addEventListener('click', startGame);
