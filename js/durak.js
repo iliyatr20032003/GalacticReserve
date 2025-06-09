@@ -165,6 +165,16 @@ document.addEventListener('DOMContentLoaded', () => {
         awaitingDefence = false;
         updateView();
         statusEl.textContent = 'Your attack';
+        // Automatically end the round if the AI has no cards left, the deck is
+        // empty, and the player cannot legally continue the attack. Without
+        // this check the status would misleadingly remain "Your attack" even
+        // though the AI has effectively won.
+        if (state.players[1].hand.length === 0 && state.stock.length === 0 && !state.trumpCard) {
+            const legal = DurakEngine.getLegalAttacks(state.players[0].hand, state.table);
+            if (legal.length === 0) {
+                setTimeout(() => endTurn(true), 300);
+            }
+        }
     }
 
     function endTurn(success) {
