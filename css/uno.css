@@ -42,3 +42,28 @@
 .card.wild { background-color: #000; color: white; }
 .card.back { background-color: #21262d; color: white; }
 .deck-count { margin-left: 5px; }
+
+.color-select {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.color-select.hidden {
+    display: none;
+}
+
+.color-select .card {
+    width: 60px;
+    height: 90px;
+    margin: 10px;
+    cursor: pointer;
+    font-size: 0;
+}
