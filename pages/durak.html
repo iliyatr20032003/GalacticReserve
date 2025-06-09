@@ -35,6 +35,31 @@
             </select>
             <button class="baton" id="newGame">New Game</button>
             <button class="baton" id="take">Take</button>
+            <button class="baton" id="rulesButton">&#128214; Rules</button>
+        </div>
+    </div>
+    <div id="rulesModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('rulesModal').style.display='none'">&times;</span>
+            <h2>Durak Rules</h2>
+            <p>Durak is a classic Russian card game played with a 36-card deck. The goal is to avoid being the last player holding cards.</p>
+            <h3>Setup</h3>
+            <p>The game is typically played with two to five people (six at most). Use a deck of 36 cards (a 52-card deck without 2–5s). Shuffle the deck and deal six cards to each player. Turn the bottom card of the remaining deck face up — its suit is trump for the deal. The rest of the pack is placed crosswise on top of the trump card to form the talon. Discarded cards from successful defences go to a separate pile.</p>
+            <p>The player holding the lowest trump begins the first attack. The player to their left always defends.</p>
+            <h3>Playing a Turn</h3>
+            <h4>First Attack</h4>
+            <p>Cards are ranked 6, 7, 8, 9, 10, J, Q, K, A (ace high). Any trump beats every card of the other suits. The attacker plays one card face up on the table. The defender must beat it either with a higher card of the same suit or with any trump card.</p>
+            <h4>Continuing the Attack</h4>
+            <p>If the defender succeeds, the attacker (or other players in clockwise order) may add new attacking cards. Each new card must match the rank of any card already on the table. No more than six attacking cards may be played in a round. The defender must beat each new card in the same fashion.</p>
+            <p>A defender who cannot or chooses not to beat the current attack must pick up all cards on the table. After the defender picks up, other players may add cards matching any rank already played, up to the six card limit.</p>
+            <p>If the defender beats all attacking cards and no one adds more, all cards from that round go to the discard pile and the defender becomes the next attacker.</p>
+            <p>No one may look through the discard pile during play.</p>
+            <h4>End of Turn</h4>
+            <p>After each round of attacks (whether successful or not), players refill their hands from the talon back up to six cards, starting with the main attacker and ending with the defender. When the talon is exhausted, players simply play out the cards remaining in their hands.</p>
+            <h3>Winning and Losing</h3>
+            <p>The last player left holding cards is the fool (Durak) and loses the game. Some variants declare the round's first player to empty their hand the winner, while others only name the loser.</p>
+            <h4>AI Difficulty</h4>
+            <p>Select <strong>Easy</strong>, <strong>Normal</strong>, or <strong>Hard</strong> from the dropdown before starting a game.</p>
         </div>
     </div>
 </body>

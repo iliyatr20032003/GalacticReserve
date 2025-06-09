@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const newGameBtn = document.getElementById('newGame');
     const takeBtn = document.getElementById('take');
     const difficultyEl = document.getElementById('difficulty');
+    const rulesBtn = document.getElementById('rulesButton');
+    const rulesModal = document.getElementById('rulesModal');
 
     let state;
     let awaitingDefence = false;
@@ -167,6 +169,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (difficultyEl) {
         difficultyEl.addEventListener('change', () => {
             DurakAI.setDifficulty(difficultyEl.value);
+        });
+    }
+    if (rulesBtn) {
+        rulesBtn.addEventListener('click', () => {
+            if (rulesModal) rulesModal.style.display = 'flex';
         });
     }
     startGame();
