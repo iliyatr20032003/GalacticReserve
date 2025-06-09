@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
         state.table[0].defence = card;
         awaitingDefence = false;
         updateView();
-        setTimeout(() => endTurn(true), 500);
+        setTimeout(() => endTurn(true), 1000);
     }
 
     function endTurn(success) {
