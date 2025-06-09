@@ -110,7 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (state.attacker !== 0 || awaitingDefence) return;
         const legal = DurakEngine.getLegalAttacks(state.players[0].hand, state.table);
         if (!legal.includes(card)) return;
-        if (state.table.length >= 6 || state.table.length >= state.players[1].hand.length) return;
+        const maxPairs = DurakEngine.getAttackLimit(state);
+        if (state.table.length >= maxPairs || state.table.length >= state.players[1].hand.length) return;
         const idx = state.players[0].hand.indexOf(card);
         if (idx === -1) return;
         state.players[0].hand.splice(idx,1);
@@ -134,7 +135,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function aiAttack() {
-        if (state.table.length >= 6 || state.table.length >= state.players[0].hand.length) {
+        const maxPairs = DurakEngine.getAttackLimit(state);
+        if (state.table.length >= maxPairs || state.table.length >= state.players[0].hand.length) {
             endTurn(true);
             return;
         }
