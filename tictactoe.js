@@ -119,9 +119,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (aiWin) {
                     const playerWin = hasWin(copy, playerSymbol);
                     board[from] = aiSymbol;
-                    boardEl.children[from].textContent = aiSymbol;
+                    const fromCell = boardEl.children[from];
+                    fromCell.textContent = aiSymbol;
+                    fromCell.classList.remove('player-cell', 'ai-cell');
+                    fromCell.classList.add('ai-cell');
+
                     board[to] = playerSymbol;
-                    boardEl.children[to].textContent = playerSymbol;
+                    const toCell = boardEl.children[to];
+                    toCell.textContent = playerSymbol;
+                    toCell.classList.remove('player-cell', 'ai-cell');
+                    toCell.classList.add('player-cell');
                     let result;
                     if (aiWin && playerWin) {
                         result = 'draw';
