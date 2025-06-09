@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const newGameBtn = document.getElementById('newGame');
     const drawBtn = document.getElementById('draw');
     const colorSelectEl = document.getElementById('colorSelect');
+    const drawSelectEl = document.getElementById('drawSelect');
 
     let deck = [];
     let discardPile = [];
@@ -132,6 +133,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function promptPlay(card) {
+        return new Promise(resolve => {
+            const cardEl = drawSelectEl.querySelector('.drawn-card');
+            cardEl.className = 'card drawn-card ' + card.color;
+            cardEl.textContent = displayValue(card);
+            drawSelectEl.classList.remove('hidden');
+            const options = drawSelectEl.querySelectorAll('.option');
+            function choose(e) {
+                const play = e.currentTarget.dataset.choice === 'yes';
+                options.forEach(o => o.removeEventListener('click', choose));
+                drawSelectEl.classList.add('hidden');
+                resolve(play);
+            }
+            options.forEach(o => o.addEventListener('click', choose));
+        });
+    }
+
     function chooseColorAI() {
         const counts = {red:0,green:0,blue:0,yellow:0};
         aiHand.forEach(c => { if (c.color !== 'wild') counts[c.color]++; });
@@ -193,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = drawCard(playerHand);
         updateView();
         if (isPlayable(card)) {
-            const play = confirm(`Play drawn card ${displayValue(card)}?`);
+            const play = await promptPlay(card);
             if (play) {
                 await playerPlay(playerHand.length - 1);
             } else {
