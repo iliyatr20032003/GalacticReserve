@@ -70,6 +70,9 @@ document.addEventListener('DOMContentLoaded', () => {
         hand.forEach((value, idx) => {
             const card = document.createElement('div');
             card.className = 'card';
+            if (player === 2) {
+                card.classList.add('ai-card');
+            }
             card.textContent = player === 2 ? '?' : value;
             card.dataset.index = idx;
             if (player === 1) {
