@@ -196,15 +196,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function aiMove() {
-        if (skipNext) {
-            skipNext = false;
+        if (pendingDraw > 0) {
+            for (let i = 0; i < pendingDraw; i++) drawCard(aiHand);
+            pendingDraw = 0;
+            if (skipNext) skipNext = false;
             currentPlayer = 'player';
             nextTurn();
             return;
         }
-        if (pendingDraw > 0) {
-            for (let i = 0; i < pendingDraw; i++) drawCard(aiHand);
-            pendingDraw = 0;
+        if (skipNext) {
+            skipNext = false;
             currentPlayer = 'player';
             nextTurn();
             return;
@@ -245,15 +246,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function nextTurn() {
         updateView();
         if (currentPlayer === 'player') {
-            if (skipNext) {
-                skipNext = false;
+            if (pendingDraw > 0) {
+                for (let i = 0; i < pendingDraw; i++) drawCard(playerHand);
+                pendingDraw = 0;
+                if (skipNext) skipNext = false;
                 currentPlayer = 'ai';
                 nextTurn();
                 return;
             }
-            if (pendingDraw > 0) {
-                for (let i = 0; i < pendingDraw; i++) drawCard(playerHand);
-                pendingDraw = 0;
+            if (skipNext) {
+                skipNext = false;
                 currentPlayer = 'ai';
                 nextTurn();
                 return;
