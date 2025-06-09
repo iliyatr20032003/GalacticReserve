@@ -48,19 +48,35 @@ const DurakEngine = (() => {
         return hand.filter(c => ranksOnTable.has(c.rank));
     }
 
+    function findLowestTrumpPlayer(players, trump) {
+        let lowest = Infinity;
+        let idx = 0;
+        players.forEach((player, i) => {
+            player.hand.forEach(card => {
+                if (card.suit === trump && rankIndex(card) < lowest) {
+                    lowest = rankIndex(card);
+                    idx = i;
+                }
+            });
+        });
+        return idx;
+    }
+
     function createGame() {
         const deck = createDeck();
         shuffle(deck);
         const players = [{id:0, hand:deal(deck,6)}, {id:1, hand:deal(deck,6)}];
         const trumpCard = deck.pop();
+        const attacker = findLowestTrumpPlayer(players, trumpCard.suit);
+        const defender = (attacker + 1) % players.length;
         return {
             players,
             stock: deck,
             trump: trumpCard.suit,
             trumpCard,
             table: [],
-            attacker: 0,
-            defender: 1,
+            attacker,
+            defender,
             discard: []
         };
     }
