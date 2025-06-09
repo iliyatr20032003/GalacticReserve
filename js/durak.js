@@ -124,14 +124,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = DurakAI.chooseDefence(state, attackCard, 1);
         if (!card) {
             // AI picks up
-            state.players[1].hand.push(attackCard);
-            state.table = [];
             awaitingDefence = false;
-            DurakEngine.draw(state,0);
-            DurakEngine.draw(state,1);
-            statusEl.textContent = 'AI picked up';
-            DurakEngine.rotateRoles(state,false);
+            DurakEngine.endTurn(state, false);
             updateView();
+            statusEl.textContent = 'AI picked up';
             if (state.attacker === 1) setTimeout(aiAttack,600);
             return;
         }
