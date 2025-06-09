@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const hand2El = document.getElementById('player2Hand');
     const statusEl = document.getElementById('status');
     const restartBtn = document.getElementById('restart');
+    const rulesBtn = document.getElementById('rulesButton');
+    const rulesModal = document.getElementById('rulesModal');
 
     let board;
     let deck;
@@ -84,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
         drawCard(currentPlayer);
         renderHands();
         if (checkWin(currentPlayer)) {
-            statusEl.textContent = `Player ${currentPlayer} wins!`;
+            statusEl.textContent = `Player 1 wins!`;
             gameOver = true;
             return;
         }
@@ -92,8 +94,9 @@ document.addEventListener('DOMContentLoaded', () => {
             finalizeGame();
             return;
         }
-        currentPlayer = currentPlayer === 1 ? 2 : 1;
-        statusEl.textContent = `Player ${currentPlayer}'s turn`;
+        currentPlayer = 2;
+        statusEl.textContent = "AI's turn";
+        setTimeout(aiMove, 500);
     }
 
     function eachLine(cb) {
@@ -135,11 +138,59 @@ document.addEventListener('DOMContentLoaded', () => {
         if (scores[1] > scores[2]) {
             statusEl.textContent = 'Player 1 wins by score!';
         } else if (scores[2] > scores[1]) {
-            statusEl.textContent = 'Player 2 wins by score!';
+            statusEl.textContent = 'AI wins by score!';
         } else {
             statusEl.textContent = 'Draw!';
         }
         gameOver = true;
+    }
+
+    function chooseAIMove() {
+        for (let c = 0; c < hands[2].length; c++) {
+            const value = hands[2][c];
+            for (let i = 0; i < 9; i++) {
+                if (board[i]) continue;
+                board[i] = { owner: 2, value };
+                if (checkWin(2)) { board[i] = null; return { index: i, cardIdx: c }; }
+                board[i] = null;
+            }
+        }
+        for (let i = 0; i < 9; i++) {
+            if (board[i]) continue;
+            for (let v = 1; v <= 11; v++) {
+                board[i] = { owner: 1, value: v };
+                if (checkWin(1)) { board[i] = null; return { index: i, cardIdx: 0 }; }
+                board[i] = null;
+            }
+        }
+        const empty = board.map((v, i) => v ? null : i).filter(v => v !== null);
+        const index = empty[Math.floor(Math.random() * empty.length)];
+        const cardIdx = Math.floor(Math.random() * hands[2].length);
+        return { index, cardIdx };
+    }
+
+    function placeCardAI(index, cardIdx) {
+        if (gameOver || board[index]) return;
+        const value = hands[2][cardIdx];
+        hands[2].splice(cardIdx, 1);
+        board[index] = { owner: 2, value };
+        boardEl.children[index].textContent = value;
+        drawCard(2);
+        renderHands();
+        if (checkWin(2)) {
+            statusEl.textContent = 'AI wins!';
+            gameOver = true;
+            return;
+        }
+        if (board.every(c => c)) { finalizeGame(); return; }
+        currentPlayer = 1;
+        statusEl.textContent = "Player 1's turn";
+    }
+
+    function aiMove() {
+        if (gameOver) return;
+        const { index, cardIdx } = chooseAIMove();
+        placeCardAI(index, cardIdx);
     }
 
     function restart() {
@@ -154,5 +205,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     restartBtn.addEventListener('click', restart);
+    rulesBtn.addEventListener('click', () => { rulesModal.style.display = 'flex'; });
     restart();
 });

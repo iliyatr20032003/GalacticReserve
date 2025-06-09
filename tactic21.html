@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Тактик-21</title>
+    <title>Tactic-21</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="Style.css">
     <link rel="stylesheet" href="tactic21.css">
@@ -18,15 +18,26 @@
         <div class="nav-item" onclick="location.href='index.html'">Back to the Strategies</div>
     </div>
     <div class="tactic21-container">
-        <h1>Тактик-21</h1>
+        <h1>Tactic-21</h1>
         <div id="status" class="status"></div>
         <div id="board" class="board"></div>
         <div class="hand-area">
             <div><h3>Player 1</h3><div id="player1Hand" class="hand"></div></div>
-            <div><h3>Player 2</h3><div id="player2Hand" class="hand"></div></div>
+            <div><h3>AI</h3><div id="player2Hand" class="hand"></div></div>
         </div>
         <div class="controls">
             <button class="rest" id="restart">Restart</button>
+            <button class="baton" id="rulesButton">&#128214; Rules</button>
+        </div>
+    </div>
+    <div id="rulesModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('rulesModal').style.display='none'">&times;</span>
+            <h2>Tactic-21 Rules</h2>
+            <p><strong>Goal:</strong> Create a line of three cards that sums exactly to 21.</p>
+            <p><strong>Setup:</strong> Each player starts with five random cards drawn from a deck containing four of each value from 1 to 11.</p>
+            <p><strong>Turn:</strong> On your turn, select a card from your hand and place it on an empty cell. Draw a new card if the deck still has cards.</p>
+            <p><strong>Winning:</strong> You win immediately when you form a horizontal, vertical or diagonal line of your own cards totaling 21. If the board fills without a 21 line, lines totaling 20 are worth 1 point and lines totaling 19 are worth 0.5 points. The higher score wins.</p>
         </div>
     </div>
 </body>
