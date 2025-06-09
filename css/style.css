@@ -152,6 +152,8 @@ select {
     width: auto;
     max-width: 600px; /* Limit maximum width */
     text-align: center;
+    max-height: 80vh; /* Prevent content from exceeding screen height */
+    overflow-y: auto; /* Enable scrolling if content is tall */
 }
 .close {
     float: right;
