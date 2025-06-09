@@ -130,11 +130,16 @@ const DurakEngine = (() => {
         rotateRoles(state, successfulDefence);
     }
 
+    function getAttackLimit(state) {
+        return state.discard.length === 0 ? 5 : 6;
+    }
+
     return {
         createGame,
         getLegalDefences,
         getLegalAttacks,
         beats,
-        endTurn
+        endTurn,
+        getAttackLimit
     };
 })();
