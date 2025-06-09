@@ -53,6 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (discardPile.length <= 1) return null;
             const top = discardPile.pop();
             deck = discardPile;
+            // reset any chosen colors on wild cards before shuffling back
+            deck.forEach(c => delete c.chosenColor);
             discardPile = [top];
             shuffle(deck);
         }
@@ -94,7 +96,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateDiscard() {
         const top = discardPile[discardPile.length - 1];
-        discardEl.className = 'card ' + top.color;
+        const color = top.chosenColor || top.color;
+        discardEl.className = 'card ' + color;
         discardEl.textContent = displayValue(top);
     }
 
@@ -138,10 +141,12 @@ document.addEventListener('DOMContentLoaded', () => {
     async function applyCardEffect(card, who) {
         if (card.type === 'wild') {
             currentColor = (who === 'player') ? await promptColor() : chooseColorAI();
+            card.chosenColor = currentColor;
             currentValue = null;
             currentType = 'wild';
         } else if (card.type === 'wild4') {
             currentColor = (who === 'player') ? await promptColor() : chooseColorAI();
+            card.chosenColor = currentColor;
             currentValue = null;
             currentType = 'wild4';
             pendingDraw += 4;
