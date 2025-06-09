@@ -7,6 +7,7 @@
         <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
         <link rel="icon" type="image/png" href="logo.png"> <!-- Добавьте этот тег для favicon -->
         <link rel="stylesheet" href="Style.css">
+        <script src="Script.js" defer></script>
     </head>
     
 <body>
@@ -58,7 +59,6 @@
             </select>
             <button class="baton" id="simulateBtn">Simulate</button>
         </div>
-        <p>Use the <code>investment</code> Rust binary to run this simulation on the command line.</p>
         <canvas id="investmentGraph"></canvas>
         <div class="disclaimer">Investment returns are not guaranteed and depend on various market factors.</div>
     </div>
@@ -70,5 +70,6 @@
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>   
 </body>
 </html>
