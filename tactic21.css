@@ -52,6 +52,10 @@
     cursor: pointer;
     color: #58a6ff;
 }
+.card.ai-card {
+    color: #ff7b72;
+    border-color: #ff7b72;
+}
 .card.selected {
     border-color: yellow;
 }
