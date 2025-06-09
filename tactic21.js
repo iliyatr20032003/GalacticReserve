@@ -245,8 +245,8 @@ document.addEventListener('DOMContentLoaded', () => {
         handSize = parseInt(handSizeEl.value, 10);
     });
     aiVisibleEl.addEventListener('change', () => {
-        aiCardsVisible = aiVisibleEl.checked;
-        renderHands();
+        // AI card visibility should only update after restarting the game
+        // so do not reveal cards until restart() reads the checkbox value
     });
     rulesBtn.addEventListener('click', () => { rulesModal.style.display = 'flex'; });
     settingsBtn.addEventListener('click', () => { settingsModal.style.display = 'flex'; });
