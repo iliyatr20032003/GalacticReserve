@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
         nextTurn();
     }
 
-    function playerDraw() {
+    async function playerDraw() {
         if (currentPlayer !== 'player') return;
         if (pendingDraw > 0) {
             for (let i = 0; i < pendingDraw; i++) drawCard(playerHand);
@@ -191,9 +191,15 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         const card = drawCard(playerHand);
+        updateView();
         if (isPlayable(card)) {
-            // auto play if possible
-            playerPlay(playerHand.length - 1);
+            const play = confirm(`Play drawn card ${displayValue(card)}?`);
+            if (play) {
+                await playerPlay(playerHand.length - 1);
+            } else {
+                currentPlayer = 'ai';
+                nextTurn();
+            }
         } else {
             currentPlayer = 'ai';
             nextTurn();
