@@ -222,8 +222,11 @@ document.addEventListener('DOMContentLoaded', () => {
         renderHands();
         selectedCardIndex = null;
         gameOver = false;
-        currentPlayer = 1;
-        statusEl.textContent = "Player 1's turn";
+        currentPlayer = Math.random() < 0.5 ? 1 : 2;
+        statusEl.textContent = currentPlayer === 1 ? "Player 1's turn" : "AI's turn";
+        if (currentPlayer === 2) {
+            setTimeout(aiMove, 500);
+        }
     }
 
     restartBtn.addEventListener('click', restart);
