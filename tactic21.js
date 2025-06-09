@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function dealHands() {
         hands = {1: [], 2: []};
         for (let p = 1; p <= 2; p++) {
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 4; i++) {
                 drawCard(p);
             }
         }
