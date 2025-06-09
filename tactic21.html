@@ -28,6 +28,7 @@
         <div class="controls">
             <button class="rest" id="restart">Restart</button>
             <button class="baton" id="rulesButton">&#128214; Rules</button>
+            <button class="baton" id="settingsButton">&#9881; Settings</button>
         </div>
     </div>
     <div id="rulesModal" class="modal">
@@ -35,9 +36,25 @@
             <span class="close" onclick="document.getElementById('rulesModal').style.display='none'">&times;</span>
             <h2>Tactic-21 Rules</h2>
             <p><strong>Goal:</strong> Create a line of three cards that sums exactly to 21.</p>
-            <p><strong>Setup:</strong> Each player starts with four random cards drawn from a deck containing four of each value from 1 to 11.</p>
+            <p><strong>Setup:</strong> Each player starts with the number of random cards selected in the settings, drawn from a deck containing four of each value from 1 to 11.</p>
             <p><strong>Turn:</strong> On your turn, select a card from your hand and place it on an empty cell. Draw a new card if the deck still has cards.</p>
             <p><strong>Winning:</strong> You win immediately when you form a horizontal, vertical or diagonal line of your own cards totaling 21. If the board fills without a 21 line, lines totaling 20 are worth 1 point and lines totaling 19 are worth 0.5 points. The higher score wins.</p>
+        </div>
+    </div>
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('settingsModal').style.display='none'">&times;</span>
+            <h2>Settings</h2>
+            <label for="handSize">Hand Size:</label>
+            <select id="handSize">
+                <option value="3">3</option>
+                <option value="4" selected>4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+            </select>
+            <br>
+            <label for="aiVisible">Show AI cards</label>
+            <input type="checkbox" id="aiVisible">
         </div>
     </div>
 </body>
