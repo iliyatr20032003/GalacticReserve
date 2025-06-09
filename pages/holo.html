@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galactic Reserve Investment Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/holo.css">
+</head>
+<body>
+    <div class="nav-bar">
+        <div class="logo"></div>
+        <div class="bank-name">Galactic Reserve</div>
+        <div class="nav-item" onclick="document.getElementById('investmentModal').style.display='flex'">Investment Strategies</div>
+    </div>
+    <div id="investmentModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('investmentModal').style.display='none'">&times;</span>
+            <h2>Investment Strategies</h2>
+            <p>Our investment strategies involve diverse asset classes tailored to different risk profiles:</p>
+            <ul>
+                <li><strong>Conservative:</strong> Focus on secure, low-risk assets such as bonds and blue-chip stocks.</li>
+                <li><strong>Moderate Risk:</strong> Balanced approach with a mix of stocks and bonds to offer moderate growth with controlled risk.</li>
+                <li><strong>Aggressive:</strong> High growth potential through investments in emerging markets and startups.</li>
+                <li><strong>High-Stakes:</strong> Targeting high-risk, high-return opportunities across galaxies, including speculative assets and ventures.</li>
+            </ul>
+        </div>
+    </div>
+    <div class="container">
+        <div class="description">
+            Welcome to Galactic Reserve, your premier intergalactic banking partner. Uniting worlds and multiplying wealth with secure, innovative financial services.
+        </div>
+        <div class="inputs">
+            <input type="number" id="investmentInput" placeholder="Enter your investment in Credits" min="0" autofocus>
+            <select id="investmentType">
+                <option value="1.1">Conservative</option>
+                <option value="1.3">Moderate Risk</option>
+                <option value="1.5">Aggressive</option>
+                <option value="1.7">Balanced Tech</option>
+                <option value="2.0">High-Stakes</option>
+                <option value="2.5">Ultra High-Stakes</option>
+            </select>
+            <button id="simulateBtn">Simulate</button>
+        </div>
+        <canvas id="investmentGraph"></canvas>
+        <div class="disclaimer">Investment returns are not guaranteed and depend on various market factors.</div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../js/holo.js"></script>
+</body>
+</html>
