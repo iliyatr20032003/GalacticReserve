@@ -32,9 +32,23 @@ document.addEventListener('DOMContentLoaded', () => {
         return div;
     }
 
+    // Sort cards by suit and rank with trump cards on the far right
+    function sortHand(hand, trump) {
+        const ranks = ['6','7','8','9','10','J','Q','K','A'];
+        const suits = ['\u2660','\u2665','\u2666','\u2663'];
+        const suitOrder = suits.filter(s => s !== trump);
+        suitOrder.push(trump);
+        return hand.slice().sort((a, b) => {
+            const suitDiff = suitOrder.indexOf(a.suit) - suitOrder.indexOf(b.suit);
+            if (suitDiff !== 0) return suitDiff;
+            return ranks.indexOf(a.rank) - ranks.indexOf(b.rank);
+        });
+    }
+
     function renderHand(el, hand, hide) {
         el.innerHTML = '';
-        hand.forEach(c => {
+        const sorted = sortHand(hand, state.trump);
+        sorted.forEach(c => {
             if (hide) {
                 const back = document.createElement('div');
                 back.className = 'card back';
