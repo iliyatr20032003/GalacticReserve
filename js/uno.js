@@ -168,17 +168,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 container.appendChild(div);
             });
             const take = document.createElement('div');
-            take.className = 'card black';
+            take.className = 'card black take-option';
             take.textContent = 'Take +' + total;
             take.addEventListener('click', () => {
                 cleanup();
                 resolve(null);
             });
-            container.appendChild(take);
+            stackSelectEl.appendChild(take);
             stackSelectEl.classList.remove('hidden');
             function cleanup() {
                 stackSelectEl.classList.add('hidden');
                 container.innerHTML = '';
+                stackSelectEl.removeChild(take);
             }
         });
     }
