@@ -71,6 +71,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 trumpEl.classList.add('trump-card');
                 stockEl.appendChild(trumpEl);
             }
+        } else {
+            const indicator = createCardElement({rank: '', suit: state.trump});
+            indicator.classList.add('trump-indicator');
+            stockEl.appendChild(indicator);
         }
     }
 
