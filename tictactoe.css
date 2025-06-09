@@ -19,11 +19,18 @@
     justify-content: center;
     align-items: center;
     font-size: 32px;
-    color: #58a6ff;
     cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
     outline: none;
+}
+
+.player-cell {
+    color: #58a6ff;
+}
+
+.ai-cell {
+    color: #ff5555;
 }
 .status {
     font-size: 20px;

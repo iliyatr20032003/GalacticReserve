@@ -78,7 +78,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function makeMove(index, symbol) {
         board[index] = symbol;
-        boardEl.children[index].textContent = symbol;
+        const cell = boardEl.children[index];
+        cell.textContent = symbol;
+        cell.classList.remove('player-cell', 'ai-cell');
+        cell.classList.add(symbol === aiSymbol ? 'ai-cell' : 'player-cell');
         const winner = checkWinner(board);
         if (winner) {
             statusEl.textContent = winner === 'draw' ? 'Draw!' : `${winner} wins!`;
