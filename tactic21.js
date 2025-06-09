@@ -64,14 +64,16 @@ document.addEventListener('DOMContentLoaded', () => {
         hand.forEach((value, idx) => {
             const card = document.createElement('div');
             card.className = 'card';
-            card.textContent = value;
+            card.textContent = player === 2 ? '?' : value;
             card.dataset.index = idx;
-            card.addEventListener('click', () => {
-                if (gameOver || currentPlayer !== player) return;
-                selectedCardIndex = idx;
-                Array.from(el.children).forEach(c => c.classList.remove('selected'));
-                card.classList.add('selected');
-            });
+            if (player === 1) {
+                card.addEventListener('click', () => {
+                    if (gameOver || currentPlayer !== player) return;
+                    selectedCardIndex = idx;
+                    Array.from(el.children).forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                });
+            }
             el.appendChild(card);
         });
     }
