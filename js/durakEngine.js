@@ -94,6 +94,18 @@ const DurakEngine = (() => {
         }
     }
 
+    // Draw cards for each player starting with the attacker and ending with
+    // the defender. This mirrors the real-life rule that the defender refills
+    // their hand last.
+    function refillPlayers(state) {
+        let index = state.attacker;
+        while (true) {
+            draw(state, index);
+            if (index === state.defender) break;
+            index = (index + 1) % state.players.length;
+        }
+    }
+
     function rotateRoles(state, successfulDefence) {
         if (successfulDefence) {
             // Defender becomes the next attacker and the new defender is the
@@ -114,8 +126,7 @@ const DurakEngine = (() => {
             state.players[state.defender].hand.push(...state.table.flatMap(p => [p.attack].concat(p.defence ? [p.defence] : [])));
         }
         state.table = [];
-        draw(state, state.attacker);
-        draw(state, state.defender);
+        refillPlayers(state);
         rotateRoles(state, successfulDefence);
     }
 
