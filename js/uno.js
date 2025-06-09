@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const statusEl = document.getElementById('status');
     const newGameBtn = document.getElementById('newGame');
     const drawBtn = document.getElementById('draw');
+    const colorSelectEl = document.getElementById('colorSelect');
 
     let deck = [];
     let discardPile = [];
@@ -115,10 +116,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function promptColor() {
-        const c = prompt('Choose color: red, green, blue, yellow', 'red');
-        const color = (c || '').toLowerCase();
-        if (['red','green','blue','yellow'].includes(color)) return color;
-        return 'red';
+        return new Promise(resolve => {
+            colorSelectEl.classList.remove('hidden');
+            const options = colorSelectEl.querySelectorAll('.card');
+            function choose(e) {
+                const color = e.currentTarget.dataset.color;
+                options.forEach(o => o.removeEventListener('click', choose));
+                colorSelectEl.classList.add('hidden');
+                resolve(color);
+            }
+            options.forEach(o => o.addEventListener('click', choose));
+        });
     }
 
     function chooseColorAI() {
@@ -127,13 +135,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return Object.keys(counts).reduce((a,b) => counts[a] > counts[b] ? a : b);
     }
 
-    function applyCardEffect(card, who) {
+    async function applyCardEffect(card, who) {
         if (card.type === 'wild') {
-            currentColor = (who === 'player') ? promptColor() : chooseColorAI();
+            currentColor = (who === 'player') ? await promptColor() : chooseColorAI();
             currentValue = null;
             currentType = 'wild';
         } else if (card.type === 'wild4') {
-            currentColor = (who === 'player') ? promptColor() : chooseColorAI();
+            currentColor = (who === 'player') ? await promptColor() : chooseColorAI();
             currentValue = null;
             currentType = 'wild4';
             pendingDraw += 4;
@@ -152,20 +160,19 @@ document.addEventListener('DOMContentLoaded', () => {
         updateDiscard();
     }
 
-    function playerPlay(index) {
+    async function playerPlay(index) {
         if (currentPlayer !== 'player') return;
         const card = playerHand[index];
         if (!isPlayable(card)) return;
         playerHand.splice(index, 1);
         discardPile.push(card);
-        applyCardEffect(card, 'player');
+        await applyCardEffect(card, 'player');
         if (playerHand.length === 0) {
             statusEl.textContent = 'You win!';
             endGame();
             return;
         }
-        currentPlayer = skipNext ? 'player' : 'ai';
-        skipNext = false;
+        currentPlayer = 'ai';
         nextTurn();
     }
 
@@ -188,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function aiMove() {
+    async function aiMove() {
         if (skipNext) {
             skipNext = false;
             currentPlayer = 'player';
@@ -208,14 +215,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isPlayable(card)) {
                 aiHand.pop();
                 discardPile.push(card);
-                applyCardEffect(card, 'ai');
+                await applyCardEffect(card, 'ai');
                 if (aiHand.length === 0) {
                     statusEl.textContent = 'AI wins!';
                     endGame();
                     return;
                 }
-                currentPlayer = skipNext ? 'ai' : 'player';
-                skipNext = false;
+                currentPlayer = 'player';
                 nextTurn();
             } else {
                 currentPlayer = 'player';
@@ -226,20 +232,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = playable[Math.floor(Math.random() * playable.length)];
         aiHand.splice(aiHand.indexOf(card), 1);
         discardPile.push(card);
-        applyCardEffect(card, 'ai');
+        await applyCardEffect(card, 'ai');
         if (aiHand.length === 0) {
             statusEl.textContent = 'AI wins!';
             endGame();
             return;
         }
-        currentPlayer = skipNext ? 'ai' : 'player';
-        skipNext = false;
+        currentPlayer = 'player';
         nextTurn();
     }
 
     function nextTurn() {
         updateView();
         if (currentPlayer === 'player') {
+            if (skipNext) {
+                skipNext = false;
+                currentPlayer = 'ai';
+                nextTurn();
+                return;
+            }
+            if (pendingDraw > 0) {
+                for (let i = 0; i < pendingDraw; i++) drawCard(playerHand);
+                pendingDraw = 0;
+                currentPlayer = 'ai';
+                nextTurn();
+                return;
+            }
             statusEl.textContent = 'Your turn';
             drawBtn.disabled = false;
         } else {
