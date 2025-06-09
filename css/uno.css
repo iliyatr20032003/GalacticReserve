@@ -76,6 +76,7 @@
     height: 100%;
     background: rgba(0, 0, 0, 0.8);
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     z-index: 1000;
@@ -98,4 +99,15 @@
 
 .draw-select .drawn-card {
     cursor: default;
+}
+
+.draw-select .options {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.card.black {
+    background-color: #000;
+    color: white;
 }
