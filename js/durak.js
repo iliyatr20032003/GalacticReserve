@@ -170,6 +170,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function endTurn(success) {
         DurakEngine.endTurn(state, success);
         updateView();
+        if (state.players[0].hand.length === 0 && state.players[1].hand.length === 0 &&
+            state.stock.length === 0 && !state.trumpCard) {
+            statusEl.textContent = 'Draw!';
+            return;
+        }
         if (state.players[0].hand.length === 0 && state.stock.length === 0 && !state.trumpCard) {
             statusEl.textContent = 'You win!';
             return;
