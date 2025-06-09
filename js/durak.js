@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const statusEl = document.getElementById('status');
     const newGameBtn = document.getElementById('newGame');
     const takeBtn = document.getElementById('take');
+    const beatBtn = document.getElementById('beat');
     const difficultyEl = document.getElementById('difficulty');
     const rulesBtn = document.getElementById('rulesButton');
     const rulesModal = document.getElementById('rulesModal');
@@ -99,17 +100,24 @@ document.addEventListener('DOMContentLoaded', () => {
         renderHand(aiHandEl, state.players[1].hand, true);
         renderTable();
         renderStock();
+        if (beatBtn) {
+            beatBtn.style.display = state.attacker === 0 ? 'inline-block' : 'none';
+            beatBtn.disabled = awaitingDefence || state.table.length === 0 || state.table.some(p => !p.defence);
+        }
     }
 
     function playerAttack(card) {
         if (state.attacker !== 0 || awaitingDefence) return;
+        const legal = DurakEngine.getLegalAttacks(state.players[0].hand, state.table);
+        if (!legal.includes(card)) return;
+        if (state.table.length >= 6 || state.table.length >= state.players[1].hand.length) return;
         const idx = state.players[0].hand.indexOf(card);
         if (idx === -1) return;
         state.players[0].hand.splice(idx,1);
         state.table.push({attack: card});
         awaitingDefence = true;
         updateView();
-        setTimeout(()=>aiDefend(card),500);
+        setTimeout(()=>aiDefend(card, state.table.length-1),500);
     }
 
     function playerDefend(card) {
@@ -122,10 +130,14 @@ document.addEventListener('DOMContentLoaded', () => {
         state.table[state.table.length-1].defence = card;
         awaitingDefence = false;
         updateView();
-        endTurn(true);
+        setTimeout(aiAttack, 600);
     }
 
     function aiAttack() {
+        if (state.table.length >= 6 || state.table.length >= state.players[0].hand.length) {
+            endTurn(true);
+            return;
+        }
         const card = DurakAI.chooseAttack(state,1);
         if (!card) { endTurn(true); return; }
         const idx = state.players[1].hand.indexOf(card);
@@ -136,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
         statusEl.textContent = 'Defend!';
     }
 
-    function aiDefend(attackCard) {
+    function aiDefend(attackCard, pairIndex) {
         const card = DurakAI.chooseDefence(state, attackCard, 1);
         if (!card) {
             // AI picks up
@@ -147,10 +159,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const idx = state.players[1].hand.indexOf(card);
         state.players[1].hand.splice(idx,1);
-        state.table[0].defence = card;
+        state.table[pairIndex].defence = card;
         awaitingDefence = false;
         updateView();
-        setTimeout(() => endTurn(true), 1000);
+        statusEl.textContent = 'Your attack';
     }
 
     function endTurn(success) {
@@ -174,6 +186,16 @@ document.addEventListener('DOMContentLoaded', () => {
         statusEl.textContent = 'You picked up';
         setTimeout(() => endTurn(false), 600);
     });
+
+    if (beatBtn) {
+        beatBtn.addEventListener('click', () => {
+            if (state.attacker !== 0) return;
+            if (awaitingDefence) return;
+            if (state.table.length === 0) return;
+            if (state.table.some(p => !p.defence)) return;
+            endTurn(true);
+        });
+    }
 
     newGameBtn.addEventListener('click', startGame);
     if (difficultyEl) {
