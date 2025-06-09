@@ -98,6 +98,20 @@ option, label {
     background-color: #30363d; /* Hover state */
     color: #58a6ff;
 }
+.rest {
+    margin: 5px;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    background-color: #58a6ff;
+    color: #0d1117;
+    font-family: 'Orbitron', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.rest:hover {
+    background-color: #79c0ff;
+}
 button:hover {
     background-color: #30363d; /* Hover state */
     color: #58a6ff;
