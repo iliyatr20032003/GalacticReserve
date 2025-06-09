@@ -127,10 +127,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!card) {
             // AI picks up
             awaitingDefence = false;
-            DurakEngine.endTurn(state, false);
-            updateView();
             statusEl.textContent = 'AI picked up';
-            if (state.attacker === 1) setTimeout(aiAttack,600);
+            setTimeout(() => endTurn(false), 600);
             return;
         }
         const idx = state.players[1].hand.indexOf(card);
@@ -159,10 +157,8 @@ document.addEventListener('DOMContentLoaded', () => {
     takeBtn.addEventListener('click', () => {
         if (state.defender !== 0 || !awaitingDefence) return;
         awaitingDefence = false;
-        DurakEngine.endTurn(state, false);
-        updateView();
         statusEl.textContent = 'You picked up';
-        if (state.attacker === 1) setTimeout(aiAttack, 600);
+        setTimeout(() => endTurn(false), 600);
     });
 
     newGameBtn.addEventListener('click', startGame);
