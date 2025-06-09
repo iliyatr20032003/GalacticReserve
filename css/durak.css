@@ -26,6 +26,9 @@
 .trump-card {
     margin-left: 10px;
 }
+.trump-indicator {
+    margin-left: 10px;
+}
 .pair {
     display: flex;
     flex-direction: column;
