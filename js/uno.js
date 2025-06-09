@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const drawBtn = document.getElementById('draw');
     const colorSelectEl = document.getElementById('colorSelect');
     const drawSelectEl = document.getElementById('drawSelect');
+    const stackSelectEl = document.getElementById('stackSelect');
 
     let deck = [];
     let discardPile = [];
@@ -110,8 +111,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function isPlayable(card) {
-        if (pendingDraw > 0 && card.type !== 'draw2' && card.type !== 'wild4') {
-            return false;
+        if (pendingDraw > 0) {
+            if (currentType === 'draw2' && card.type !== 'draw2') return false;
+            if (currentType === 'wild4' && card.type !== 'wild4') return false;
         }
         if (card.color === 'wild') return true;
         return card.color === currentColor ||
@@ -147,6 +149,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 resolve(play);
             }
             options.forEach(o => o.addEventListener('click', choose));
+        });
+    }
+
+    function promptStack(indexes, total, type) {
+        return new Promise(resolve => {
+            const container = stackSelectEl.querySelector('.options');
+            container.innerHTML = '';
+            indexes.forEach(i => {
+                const c = playerHand[i];
+                const div = document.createElement('div');
+                div.className = 'card ' + (c.color === 'wild' ? 'wild' : c.color);
+                div.textContent = displayValue(c);
+                div.addEventListener('click', () => {
+                    cleanup();
+                    resolve(i);
+                });
+                container.appendChild(div);
+            });
+            const take = document.createElement('div');
+            take.className = 'card black';
+            take.textContent = 'Take +' + total;
+            take.addEventListener('click', () => {
+                cleanup();
+                resolve(null);
+            });
+            container.appendChild(take);
+            stackSelectEl.classList.remove('hidden');
+            function cleanup() {
+                stackSelectEl.classList.add('hidden');
+                container.innerHTML = '';
+            }
         });
     }
 
@@ -199,6 +232,31 @@ document.addEventListener('DOMContentLoaded', () => {
         nextTurn();
     }
 
+    async function handlePlayerStack() {
+        const indexes = [];
+        playerHand.forEach((c, i) => { if (c.type === currentType) indexes.push(i); });
+        if (indexes.length === 0) {
+            for (let i = 0; i < pendingDraw; i++) drawCard(playerHand);
+            pendingDraw = 0;
+            if (skipNext) skipNext = false;
+            currentPlayer = 'ai';
+            nextTurn();
+            return;
+        }
+        drawBtn.disabled = true;
+        statusEl.textContent = 'Stack or draw';
+        const choice = await promptStack(indexes, pendingDraw, currentType);
+        if (choice !== null) {
+            await playerPlay(choice);
+        } else {
+            for (let i = 0; i < pendingDraw; i++) drawCard(playerHand);
+            pendingDraw = 0;
+            if (skipNext) skipNext = false;
+            currentPlayer = 'ai';
+            nextTurn();
+        }
+    }
+
     async function playerDraw() {
         if (currentPlayer !== 'player') return;
         if (pendingDraw > 0) {
@@ -226,6 +284,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function aiMove() {
         if (pendingDraw > 0) {
+            if (currentType === 'draw2' || currentType === 'wild4') {
+                const idx = aiHand.findIndex(c => c.type === currentType);
+                if (idx !== -1) {
+                    const card = aiHand[idx];
+                    aiHand.splice(idx, 1);
+                    discardPile.push(card);
+                    await applyCardEffect(card, 'ai');
+                    if (aiHand.length === 0) {
+                        statusEl.textContent = 'AI wins!';
+                        endGame();
+                        return;
+                    }
+                    currentPlayer = 'player';
+                    nextTurn();
+                    return;
+                }
+            }
             for (let i = 0; i < pendingDraw; i++) drawCard(aiHand);
             pendingDraw = 0;
             if (skipNext) skipNext = false;
@@ -275,7 +350,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function nextTurn() {
         updateView();
         if (currentPlayer === 'player') {
-            if (pendingDraw > 0) {
+            if (pendingDraw > 0 && (currentType === 'draw2' || currentType === 'wild4')) {
+                handlePlayerStack();
+                return;
+            } else if (pendingDraw > 0) {
                 for (let i = 0; i < pendingDraw; i++) drawCard(playerHand);
                 pendingDraw = 0;
                 if (skipNext) skipNext = false;
