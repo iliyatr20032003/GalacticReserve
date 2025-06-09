@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Durak</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/durak.css">
+    <script src="../js/durakEngine.js"></script>
+    <script src="../js/durakAI.js"></script>
+    <script src="../js/durak.js" defer></script>
+</head>
+<body>
+    <div class="nav-bar">
+        <div class="logo-container">
+            <div class="logo"></div>
+        </div>
+        <div class="bank-name" onclick="location.href='../index.html'">Galactic Reserve</div>
+        <div class="nav-item" onclick="location.href='../index.html'">Back to the Strategies</div>
+    </div>
+    <div class="durak-container">
+        <h1>Durak</h1>
+        <div id="aiHand" class="hand"></div>
+        <div id="table" class="table"></div>
+        <div id="playerHand" class="hand"></div>
+        <div id="status" class="status"></div>
+        <div class="controls">
+            <label for="difficulty">AI:</label>
+            <select id="difficulty">
+                <option value="hard">Hard</option>
+                <option value="normal" selected>Normal</option>
+                <option value="easy">Easy</option>
+            </select>
+            <button class="baton" id="newGame">New Game</button>
+            <button class="baton" id="take">Take</button>
+        </div>
+    </div>
+</body>
+</html>
