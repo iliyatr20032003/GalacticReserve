@@ -6,8 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const restartBtn = document.getElementById('restart');
     const rulesBtn = document.getElementById('rulesButton');
     const rulesModal = document.getElementById('rulesModal');
-    const handSizeEl = document.getElementById('handSize');
-    const aiVisibleEl = document.getElementById('aiVisible');
 
     let board;
     let deck;
@@ -15,8 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentPlayer;
     let selectedCardIndex = null;
     let gameOver = false;
-    let handSize = parseInt(handSizeEl.value, 10);
-    let aiCardsVisible = aiVisibleEl.checked;
 
     const LINES = [
         [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
@@ -46,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function dealHands() {
         hands = {1: [], 2: []};
         for (let p = 1; p <= 2; p++) {
-            for (let i = 0; i < handSize; i++) {
+            for (let i = 0; i < 4; i++) {
                 drawCard(p);
             }
         }
@@ -77,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (player === 2) {
                 card.classList.add('ai-card');
             }
-            card.textContent = (player === 2 && !aiCardsVisible) ? '?' : value;
+            card.textContent = player === 2 ? '?' : value;
             card.dataset.index = idx;
             if (player === 1) {
                 card.addEventListener('click', () => {
@@ -223,8 +219,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function restart() {
-        handSize = parseInt(handSizeEl.value, 10);
-        aiCardsVisible = aiVisibleEl.checked;
         initDeck();
         dealHands();
         createBoard();
@@ -239,11 +233,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     restartBtn.addEventListener('click', restart);
-    handSizeEl.addEventListener('change', restart);
-    aiVisibleEl.addEventListener('change', () => {
-        aiCardsVisible = aiVisibleEl.checked;
-        renderHands();
-    });
     rulesBtn.addEventListener('click', () => { rulesModal.style.display = 'flex'; });
     restart();
 });
