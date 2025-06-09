@@ -77,7 +77,8 @@ const DurakEngine = (() => {
             table: [],
             attacker,
             defender,
-            discard: []
+            discard: [],
+            defenderStartHandSize: players[defender].hand.length
         };
     }
 
@@ -128,6 +129,7 @@ const DurakEngine = (() => {
         state.table = [];
         refillPlayers(state);
         rotateRoles(state, successfulDefence);
+        state.defenderStartHandSize = state.players[state.defender].hand.length;
     }
 
     function getAttackLimit(state) {
