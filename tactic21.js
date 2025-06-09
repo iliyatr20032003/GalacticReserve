@@ -14,6 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedCardIndex = null;
     let gameOver = false;
 
+    const LINES = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+        [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+        [0, 4, 8], [2, 4, 6]            // diagonals
+    ];
+
     function initDeck() {
         deck = [];
         for (let i = 1; i <= 11; i++) {
@@ -102,12 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function eachLine(cb) {
-        const lines = [
-            [0,1,2],[3,4,5],[6,7,8],
-            [0,3,6],[1,4,7],[2,5,8],
-            [0,4,8],[2,4,6]
-        ];
-        lines.forEach(cb);
+        LINES.forEach(cb);
     }
 
     function checkWin(player) {
@@ -147,24 +148,37 @@ document.addEventListener('DOMContentLoaded', () => {
         gameOver = true;
     }
 
+    function findWinningMove(player, cards) {
+        for (let cardIdx = 0; cardIdx < cards.length; cardIdx++) {
+            const value = cards[cardIdx];
+            for (const line of LINES) {
+                let sum = value;
+                let empty = null;
+                let valid = true;
+                for (const i of line) {
+                    const cell = board[i];
+                    if (cell) {
+                        if (cell.owner !== player) { valid = false; break; }
+                        sum += cell.value;
+                    } else {
+                        if (empty === null) empty = i; else { valid = false; break; }
+                    }
+                }
+                if (valid && empty !== null && sum === 21) {
+                    return { index: empty, cardIdx };
+                }
+            }
+        }
+        return null;
+    }
+
     function chooseAIMove() {
-        for (let c = 0; c < hands[2].length; c++) {
-            const value = hands[2][c];
-            for (let i = 0; i < 9; i++) {
-                if (board[i]) continue;
-                board[i] = { owner: 2, value };
-                if (checkWin(2)) { board[i] = null; return { index: i, cardIdx: c }; }
-                board[i] = null;
-            }
-        }
-        for (let i = 0; i < 9; i++) {
-            if (board[i]) continue;
-            for (let v = 1; v <= 11; v++) {
-                board[i] = { owner: 1, value: v };
-                if (checkWin(1)) { board[i] = null; return { index: i, cardIdx: 0 }; }
-                board[i] = null;
-            }
-        }
+        let move = findWinningMove(2, hands[2]);
+        if (move) return move;
+
+        move = findWinningMove(1, Array.from({ length: 11 }, (_, i) => i + 1));
+        if (move) return { index: move.index, cardIdx: 0 };
+
         const empty = board.map((v, i) => v ? null : i).filter(v => v !== null);
         const index = empty[Math.floor(Math.random() * empty.length)];
         const cardIdx = Math.floor(Math.random() * hands[2].length);
