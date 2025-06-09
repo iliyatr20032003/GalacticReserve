@@ -90,6 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
         hands[currentPlayer].splice(selectedCardIndex, 1);
         board[index] = { owner: currentPlayer, value };
         boardEl.children[index].textContent = value;
+        boardEl.children[index].classList.add('player1');
         selectedCardIndex = null;
         drawCard(currentPlayer);
         renderHands();
@@ -191,6 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
         hands[2].splice(cardIdx, 1);
         board[index] = { owner: 2, value };
         boardEl.children[index].textContent = value;
+        boardEl.children[index].classList.add("player2");
         drawCard(2);
         renderHands();
         if (checkWin(2)) {
