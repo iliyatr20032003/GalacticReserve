@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedCardIndex = null;
         drawCard(currentPlayer);
         renderHands();
-        if (checkWin(currentPlayer)) {
+        if (checkWinAfterMove(currentPlayer, index)) {
             statusEl.textContent = `Player 1 wins!`;
             gameOver = true;
             return;
@@ -112,15 +112,19 @@ document.addEventListener('DOMContentLoaded', () => {
         LINES.forEach(cb);
     }
 
-    function checkWin(player) {
-        let win = false;
-        eachLine(line => {
-            if (line.every(i => board[i] && board[i].owner === player)) {
-                const sum = line.reduce((s, i) => s + board[i].value, 0);
-                if (sum === 21) win = true;
+    function checkWinAfterMove(player, index) {
+        for (const line of LINES) {
+            if (line.includes(index)) {
+                const cells = line.map(i => board[i]);
+                if (cells.every(c => c)) {
+                    const sum = cells.reduce((s, c) => s + c.value, 0);
+                    if (sum === 21) {
+                        return true;
+                    }
+                }
             }
-        });
-        return win;
+        }
+        return false;
     }
 
     function finalizeGame() {
@@ -195,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
         boardEl.children[index].classList.add("player2");
         drawCard(2);
         renderHands();
-        if (checkWin(2)) {
+        if (checkWinAfterMove(2, index)) {
             statusEl.textContent = 'AI wins!';
             gameOver = true;
             return;
