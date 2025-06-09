@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const playerHandEl = document.getElementById('playerHand');
     const aiHandEl = document.getElementById('aiHand');
     const tableEl = document.getElementById('table');
+    const stockEl = document.getElementById('stock');
     const statusEl = document.getElementById('status');
     const newGameBtn = document.getElementById('newGame');
     const takeBtn = document.getElementById('take');
@@ -53,10 +54,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function renderStock() {
+        if (!stockEl) return;
+        stockEl.innerHTML = '';
+        const remaining = state.stock.length + (state.trumpCard ? 1 : 0);
+        if (remaining > 0) {
+            const back = document.createElement('div');
+            back.className = 'card back';
+            const count = document.createElement('span');
+            count.className = 'deck-count';
+            count.textContent = remaining;
+            stockEl.appendChild(back);
+            stockEl.appendChild(count);
+            if (state.trumpCard) {
+                const trumpEl = createCardElement(state.trumpCard);
+                trumpEl.classList.add('trump-card');
+                stockEl.appendChild(trumpEl);
+            }
+        }
+    }
+
     function updateView() {
         renderHand(playerHandEl, state.players[0].hand, false);
         renderHand(aiHandEl, state.players[1].hand, true);
         renderTable();
+        renderStock();
     }
 
     function playerAttack(card) {

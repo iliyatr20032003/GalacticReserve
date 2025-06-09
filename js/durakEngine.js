@@ -52,11 +52,12 @@ const DurakEngine = (() => {
         const deck = createDeck();
         shuffle(deck);
         const players = [{id:0, hand:deal(deck,6)}, {id:1, hand:deal(deck,6)}];
-        const trump = deck[deck.length - 1].suit;
+        const trumpCard = deck.pop();
         return {
             players,
             stock: deck,
-            trump,
+            trump: trumpCard.suit,
+            trumpCard,
             table: [],
             attacker: 0,
             defender: 1,
@@ -65,19 +66,28 @@ const DurakEngine = (() => {
     }
 
     function draw(state, playerIndex) {
-        while (state.players[playerIndex].hand.length < 6 && state.stock.length > 0) {
-            state.players[playerIndex].hand.push(state.stock.shift());
+        while (state.players[playerIndex].hand.length < 6) {
+            if (state.stock.length > 0) {
+                state.players[playerIndex].hand.push(state.stock.shift());
+            } else if (state.trumpCard) {
+                state.players[playerIndex].hand.push(state.trumpCard);
+                state.trumpCard = null;
+            } else {
+                break;
+            }
         }
     }
 
     function rotateRoles(state, successfulDefence) {
         if (successfulDefence) {
-            const a = state.attacker;
+            // Defender becomes the next attacker and the new defender is the
+            // player to their left
             state.attacker = state.defender;
-            state.defender = (a + 1) % state.players.length;
+            state.defender = (state.attacker + 1) % state.players.length;
         } else {
-            state.attacker = state.attacker;
-            state.defender = (state.defender + 1) % state.players.length;
+            // Defender picked up; attack passes to the player on the defender's left
+            state.attacker = (state.defender + 1) % state.players.length;
+            state.defender = (state.attacker + 1) % state.players.length;
         }
     }
 
