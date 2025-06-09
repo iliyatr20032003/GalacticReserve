@@ -138,6 +138,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (result) {
                         statusEl.textContent = result === 'draw' ? 'Draw!' : `${result} wins!`;
                         gameOver = true;
+                        if (result === aiSymbol) {
+                            explodeBoard();
+                        }
                     }
                     return true;
                 }
