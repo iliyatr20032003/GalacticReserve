@@ -136,17 +136,17 @@ document.addEventListener('DOMContentLoaded', () => {
         state.table[0].defence = card;
         awaitingDefence = false;
         updateView();
-        endTurn(true);
+        setTimeout(() => endTurn(true), 500);
     }
 
     function endTurn(success) {
         DurakEngine.endTurn(state, success);
         updateView();
-        if (state.players[0].hand.length === 0 && state.stock.length === 0) {
+        if (state.players[0].hand.length === 0 && state.stock.length === 0 && !state.trumpCard) {
             statusEl.textContent = 'You win!';
             return;
         }
-        if (state.players[1].hand.length === 0 && state.stock.length === 0) {
+        if (state.players[1].hand.length === 0 && state.stock.length === 0 && !state.trumpCard) {
             statusEl.textContent = 'AI wins!';
             return;
         }
