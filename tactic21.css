@@ -19,11 +19,20 @@
     justify-content: center;
     align-items: center;
     font-size: 32px;
-    color: #58a6ff;
+    color: #58a6ff; /* Default color for Player 1 */
     cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
     outline: none;
+}
+
+/* Coloring for digits placed by each player */
+.cell.player1 {
+    color: #58a6ff;
+}
+
+.cell.player2 {
+    color: #ff7b72;
 }
 .hand {
     display: flex;
