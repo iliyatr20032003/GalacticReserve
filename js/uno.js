@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
             skipNext = true;
         } else {
             currentColor = card.color;
-            currentValue = card.value || null;
+            currentValue = (card.value !== undefined) ? card.value : null;
             currentType = card.type;
             if (card.type === 'draw2') {
                 pendingDraw += 2;
@@ -401,7 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
             first = drawCard(discardPile);
         } while (first.color === 'wild');
         currentColor = first.color;
-        currentValue = first.value || null;
+        currentValue = (first.value !== undefined) ? first.value : null;
         currentType = first.type;
         updateDiscard();
         currentPlayer = 'player';
