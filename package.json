@@ -1,0 +1,13 @@
+{
+  "name": "galacticreserve",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node tests/test_step1.js && node tests/test_step2.js && node tests/test_step5.js && node tests/test_step6.js && node tests/test_step7.js && node tests/test_step8.js && node tests/test_step9.js && node tests/test_step10.js && node tests/test_step11.js && node tests/test_step12.js && node tests/test_step13.js && node tests/test_step14.js && node tests/test_step15.js && node tests/test_step16.js && node tests/test_step19.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}
