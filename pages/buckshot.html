@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buckshot Roulette</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/buckshot.css">
+</head>
+<body>
+    <div class="nav-bar">
+        <div class="logo-container">
+            <div class="logo"></div>
+        </div>
+        <div class="bank-name" onclick="location.href='../index.html'">Galactic Reserve</div>
+        <div class="nav-item" onclick="location.href='../index.html'">Back to the Strategies</div>
+    </div>
+    <div class="buckshot-wrapper">
+        <header class="buckshot-header">
+            <div class="logo"></div>
+            <div class="scoreboard">
+                <span>Score: <span id="score">0</span></span>
+                <span>Multiplier: <span id="mult">x1</span></span>
+            </div>
+            <div class="header-buttons">
+                <button class="baton">Pause</button>
+                <button class="baton">Settings</button>
+                <button class="baton">Help</button>
+            </div>
+        </header>
+
+        <div class="play-area">
+            <div class="dealer-panel">
+                <div class="avatar">Dealer</div>
+                <div class="hp-track"></div>
+            </div>
+            <div class="game-table">Table / Game Field</div>
+            <div class="player-panel">
+                <div class="avatar">Player</div>
+                <div class="hp-track"></div>
+                <button class="baton end-turn">End Turn</button>
+            </div>
+        </div>
+
+        <div class="inventory-row">
+            <div class="item-slot">Item 1</div>
+            <div class="item-slot">Item 2</div>
+            <div class="item-slot">Item 3</div>
+            <div class="item-slot">Item 4</div>
+            <div class="item-slot">Item 5</div>
+            <div class="item-slot">Item 6</div>
+        </div>
+
+        <div class="action-bar">
+            <label><input type="radio" name="target" checked> Self</label>
+            <label><input type="radio" name="target"> Opponent</label>
+            <button class="baton fire-btn">Fire</button>
+        </div>
+    </div>
+</body>
+</html>
