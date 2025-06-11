@@ -171,6 +171,7 @@ class Game {
         this.freezeIndicator = false;
         if(shell.type==='live') {
             target.hp -= shooter.damageBoost;
+            if(target.hp < 0) target.hp = 0;
             setStatus(shooter.name+' shot '+target.name+'!');
         } else {
             setStatus(shooter.name+' fired a blank.');
@@ -227,6 +228,7 @@ class Game {
                 setStatus('Dealer heals with Expired Medicine.');
             } else {
                 this.dealer.hp -= 1;
+                if(this.dealer.hp < 0) this.dealer.hp = 0;
                 setStatus('Dealer is hurt by Expired Medicine.');
             }
             this.updateUI();
@@ -616,6 +618,7 @@ function applyItemEffect(user,item){
                 setStatus((isPlayer?'Expired Medicine healed you.':'Dealer heals with Expired Medicine.'));
             }else{
                 user.hp -= 1;
+                if(user.hp < 0) user.hp = 0;
                 setStatus((isPlayer?'Expired Medicine hurt you.':'Dealer is hurt by Expired Medicine.'));
             }
             break;
