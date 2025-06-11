@@ -21,6 +21,7 @@
         <h1>Buckshot Roulette</h1>
         <div class="status" id="status">Press Start to begin.</div>
         <div class="controls">
+            <button class="baton" id="settingsButton">&#9881; Settings</button>
             <button class="baton" id="startBtn">Start Round</button>
             <button class="baton" id="shootSelf" disabled>Shoot Self</button>
             <button class="baton" id="shootDealer" disabled>Shoot Dealer</button>
@@ -38,6 +39,15 @@
             </div>
         </div>
         <div class="magazine" id="magazine"></div>
+    </div>
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('settingsModal').style.display='none'">&times;</span>
+            <h2>Settings</h2>
+            <input id="seedInput" type="number" placeholder="Seed (optional)">
+            <br>
+            <label><input type="checkbox" id="colorblindToggle"> Colorblind Mode</label>
+        </div>
     </div>
 </body>
 </html>
