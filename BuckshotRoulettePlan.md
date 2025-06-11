@@ -35,6 +35,7 @@ The round ends when a player’s HP reaches 0 or the magazine is empty. Winning 
 | **Inverter** | Converts current shell: blank ↔ live. *(fully implemented)* |
 | **Expired Medicine** | 50% chance +2 HP, 50% chance −1 HP. *(fully implemented)* |
 These items appear only in Double or Nothing mode.
+Double or Nothing is enabled by default so these items normally appear.
 
 ### 3.3 Multiplayer only
 | Item | Effect |
@@ -107,7 +108,7 @@ stateDiagram
 - Adjustable animation speed (0.5×–2×). *(fully implemented)*
 - Option to save RNG seed for replays and debugging. *(fully implemented)*
 - Settings modal to toggle colorblind mode and enter RNG seed. *(fully implemented)*
-- Toggle for Double or Nothing mode enabling Inverter and Expired Medicine. *(fully implemented)*
+- Toggle for Double or Nothing mode enabling Inverter and Expired Medicine (on by default). *(fully implemented)*
 - Modding API (original uses Godot mods).
 - Scoring: Story uses time and leftover HP as money. Double or Nothing doubles the bank every three rounds; leaderboard via REST API.
 

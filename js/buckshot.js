@@ -28,7 +28,8 @@ class Game {
             "Hand Saw"
         ];
         this.extraItems = ["Inverter", "Expired Medicine"];
-        this.doubleMode = false;
+        // enable advanced items by default
+        this.doubleMode = true;
         this.itemPool = this.basicItems.slice();
         this.knownShell = null; // dealer knowledge of next shell
         this.dealerSkip = false; // whether dealer loses next turn
