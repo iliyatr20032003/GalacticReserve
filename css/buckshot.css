@@ -49,3 +49,23 @@
 .shell.blank {
     background: lightgray;
 }
+
+.bs-container.colorblind .shell.live {
+    background: repeating-linear-gradient(
+        45deg,
+        red 0,
+        red 4px,
+        white 4px,
+        white 8px
+    );
+}
+
+.bs-container.colorblind .shell.blank {
+    background: repeating-linear-gradient(
+        45deg,
+        lightgray 0,
+        lightgray 4px,
+        white 4px,
+        white 8px
+    );
+}

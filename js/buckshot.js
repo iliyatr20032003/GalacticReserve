@@ -22,16 +22,32 @@ class Game {
         this.itemPool = ['Cigarette Pack', 'Handcuffs', 'Magnifying Glass', 'Beer', 'Hand Saw'];
         this.knownShell = null; // dealer knowledge of next shell
         this.dealerSkip = false; // whether dealer loses next turn
+        this.seed = Date.now();
+    }
+
+    setSeed(seed) {
+        if(!Number.isFinite(seed)) return;
+        this.seed = seed;
+    }
+
+    random() {
+        // simple deterministic PRNG (LCG)
+        this.seed = (this.seed * 9301 + 49297) % 233280;
+        return this.seed / 233280;
     }
 
     startRound() {
-        this.player.hp = 3;
-        this.dealer.hp = 3;
+        const seedInput = document.getElementById('seedInput');
+        if(seedInput && seedInput.value) this.setSeed(Number(seedInput.value));
+        const hp = 2 + Math.floor(this.random() * 3); // 2-4
+        this.player.hp = hp;
+        this.dealer.hp = hp;
         this.player.damageBoost = 1;
         this.dealer.damageBoost = 1;
         this.player.items = this.randomItems();
         this.dealer.items = this.randomItems();
-        this.magazine = this.generateLoad(4);
+        const magazineSize = 2 + Math.floor(this.random()*7); // 2-8
+        this.magazine = this.generateLoad(magazineSize);
         this.current = 0;
         this.knownShell = null;
         this.dealerSkip = false;
@@ -41,10 +57,10 @@ class Game {
     }
 
     randomItems() {
-        const count = Math.floor(Math.random()*4)+2; //2-5
+        const count = Math.floor(this.random()*4)+2; //2-5
         const items = [];
         for(let i=0;i<count;i++) {
-            items.push(this.itemPool[Math.floor(Math.random()*this.itemPool.length)]);
+            items.push(this.itemPool[Math.floor(this.random()*this.itemPool.length)]);
         }
         return items;
     }
@@ -62,7 +78,7 @@ class Game {
         for(let i=0;i<blanks;i++) shells.push(new Shell('blank'));
         //shuffle
         for(let i=shells.length-1;i>0;i--) {
-            const j=Math.floor(Math.random()*(i+1));
+            const j=Math.floor(this.random()*(i+1));
             [shells[i], shells[j]]=[shells[j], shells[i]];
         }
         return shells;
@@ -149,8 +165,22 @@ const game=new Game();
 const startBtn=document.getElementById('startBtn');
 const shootSelf=document.getElementById('shootSelf');
 const shootDealer=document.getElementById('shootDealer');
+const settingsBtn=document.getElementById('settingsButton');
+const settingsModal=document.getElementById('settingsModal');
+const colorblindToggle=document.getElementById('colorblindToggle');
+
+if(colorblindToggle){
+    colorblindToggle.addEventListener('change',()=>{
+        document.querySelector('.bs-container').classList.toggle('colorblind', colorblindToggle.checked);
+    });
+}
 
 startBtn.addEventListener('click',()=>game.startRound());
+if(settingsBtn){
+    settingsBtn.addEventListener('click',()=>{
+        settingsModal.style.display='flex';
+    });
+}
 shootSelf.addEventListener('click',()=>{
     game.shoot(game.player, game.player);
     if(game.player.hp>0 && game.dealer.hp>0) setTimeout(()=>game.dealerTurn(),500);
