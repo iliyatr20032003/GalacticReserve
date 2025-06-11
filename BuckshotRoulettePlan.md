@@ -21,10 +21,10 @@ The round ends when a player’s HP reaches 0 or the magazine is empty. Winning 
 ### 3.1 Basic items *(partially implemented)*
 | Item | Effect |
 |------|--------|
-| **Cigarette Pack** | +1 HP. |
-| **Handcuffs** | Opponent skips next turn. |
-| **Magnifying Glass** | Reveals whether current shell is live or blank. |
-| **Beer** | Discards the current shell. |
+| **Cigarette Pack** | +1 HP. *(fully implemented)* |
+| **Handcuffs** | Opponent skips next turn. *(fully implemented)* |
+| **Magnifying Glass** | Reveals whether current shell is live or blank. *(fully implemented)* |
+| **Beer** | Discards the current shell. *(fully implemented)* |
 | **Hand Saw** | Shotgun deals x2 damage for the rest of the turn. |
 
 ### 3.2 Double or Nothing + Multiplayer only
@@ -49,7 +49,7 @@ else: |lives − blanks| = 1, lives + blanks = size
 ```
 Magazine is always shuffled on reload.
 
-## 5. Dealer AI
+## 5. Dealer AI *(partially implemented)*
 The single-player Dealer follows deterministic rules:
 - Uses **Magnifying Glass** when the shell is unknown.
 - Uses **Inverter** if facing a blank and wants to attack.
