@@ -83,3 +83,11 @@
         white 8px
     );
 }
+
+/* Position the Features button in the bottom-left corner */
+#settingsButton {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1100;
+}
