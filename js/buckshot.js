@@ -38,6 +38,7 @@ class Game {
         this.playerSkip = false; // whether player loses next turn
         this.seed = Date.now();
         this.animationSpeed = 1;
+        this.showIndicator = true; // display shell counter
         this.keepMagnify = false; // debug: keep magnifying glass after use
         this.keepCigarette = false; // debug: keep cigarette pack after use
         this.playerKnown = {}; // indices of shells revealed to the player
@@ -290,6 +291,7 @@ const speedDisplay=document.getElementById('speedDisplay');
 const adrenalineModal=document.getElementById('adrenalineModal');
 const adrenalineItems=document.getElementById('adrenalineItems');
 const adrenalineTimer=document.getElementById('adrenalineTimer');
+const indicatorToggle=document.getElementById('indicatorToggle');
 
 const doubleModeToggle=document.getElementById("doubleModeToggle");
 if(colorblindToggle){
@@ -320,6 +322,13 @@ if(doubleModeToggle){
     game.doubleMode = doubleModeToggle.checked;
     doubleModeToggle.addEventListener("change",()=>{
         game.doubleMode = doubleModeToggle.checked;
+    });
+}
+if(indicatorToggle){
+    game.showIndicator = indicatorToggle.checked;
+    indicatorToggle.addEventListener('change',()=>{
+        game.showIndicator = indicatorToggle.checked;
+        game.updateUI();
     });
 }
 
@@ -501,6 +510,14 @@ Game.prototype.updateUI=function(){
     const bankEl = document.getElementById('bankAmount');
     if(roundEl) roundEl.textContent = this.round;
     if(bankEl) bankEl.textContent = this.bank;
+    const indicator = document.getElementById('shellIndicator');
+    if(indicator){
+        const remaining=this.magazine.slice(this.current);
+        const lives=remaining.filter(s=>s.type==='live').length;
+        const blanks=remaining.filter(s=>s.type==='blank').length;
+        indicator.textContent=`Live: ${lives} Blank: ${blanks}`;
+        indicator.style.display=this.showIndicator?'block':'none';
+    }
 };
 
 function applyItemEffect(user,item){
