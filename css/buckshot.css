@@ -18,6 +18,13 @@
     width: 150px;
     text-align: center;
 }
+.info {
+    margin: 10px 0;
+    font-size: 18px;
+}
+.info span {
+    margin: 0 10px;
+}
 .hp-bar {
     width: 100px;
     height: 10px;
