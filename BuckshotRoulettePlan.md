@@ -18,14 +18,14 @@ Each round goes through several phases:
 The round ends when a player’s HP reaches 0 or the magazine is empty. Winning three rounds ends Story mode; in Double or Nothing players may continue for double the money.
 
 ## 3. Items
-### 3.1 Basic items *(partially implemented)*
+### 3.1 Basic items *(fully implemented)*
 | Item | Effect |
 |------|--------|
 | **Cigarette Pack** | +1 HP. *(fully implemented)* |
 | **Handcuffs** | Opponent skips next turn. *(fully implemented)* |
 | **Magnifying Glass** | Reveals whether current shell is live or blank. *(fully implemented)* |
 | **Beer** | Discards the current shell. *(fully implemented)* |
-| **Hand Saw** | Shotgun deals x2 damage for the rest of the turn. |
+| **Hand Saw** | Shotgun deals x2 damage for the rest of the turn. *(fully implemented)* |
 
 ### 3.2 Double or Nothing + Multiplayer only
 | Item | Effect |
@@ -56,6 +56,7 @@ The single-player Dealer follows deterministic rules:
 - Uses **Handcuffs** whenever available.
 - Uses **Adrenaline** to steal useful items it lacks (e.g., Cigarette Pack).
 - Fires a blank at themselves when it’s a safe pass.
+- Uses **Hand Saw** before attacking for double damage.
 
 Implement as a simple rule-based finite-state machine that tracks known shells and processes the above rules in order.
 
