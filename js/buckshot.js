@@ -44,6 +44,9 @@ class Game {
         this.keepCigarette = false; // debug: keep cigarette pack after use
         this.playerKnown = {}; // indices of shells revealed to the player
         this.dealerKnown = {}; // indices of shells revealed to the dealer
+        this.freezeIndicator = false; // freeze shell counter display
+        this.cachedLives = 0;
+        this.cachedBlanks = 0;
     }
 
     setSeed(seed) {
@@ -86,6 +89,7 @@ class Game {
         this.playerSkip = false;
         this.playerKnown = {};
         this.dealerKnown = {};
+        this.freezeIndicator = false;
         this.updateUI();
         setStatus('Round '+this.round+' started. Your move.');
         enableControls();
@@ -123,6 +127,7 @@ class Game {
     reloadMagazine() {
         this.player.damageBoost = 1;
         this.dealer.damageBoost = 1;
+        this.freezeIndicator = false;
         this.updateItemPool();
         this.player.items = this.player.items.concat(this.randomItems()).slice(0,8);
         this.dealer.items = this.dealer.items.concat(this.randomItems()).slice(0,8);
@@ -163,6 +168,7 @@ class Game {
             this.reloadMagazine();
         }
         const shell=this.magazine[this.current++];
+        this.freezeIndicator = false;
         if(shell.type==='live') {
             target.hp -= shooter.damageBoost;
             setStatus(shooter.name+' shot '+target.name+'!');
@@ -255,6 +261,10 @@ class Game {
         let nextType = this.knownShell || this.magazine[this.current].type;
         const invIndex = this.dealer.items.indexOf('Inverter');
         if(nextType === 'blank' && invIndex > -1) {
+            const remain=this.magazine.slice(this.current);
+            this.cachedLives=remain.filter(s=>s.type==='live').length;
+            this.cachedBlanks=remain.filter(s=>s.type==='blank').length;
+            this.freezeIndicator=true;
             this.magazine[this.current].type = 'live';
             nextType = 'live';
             this.dealer.items.splice(invIndex,1);
@@ -267,6 +277,7 @@ class Game {
             if(beerIndex > -1) {
                 this.dealer.items.splice(beerIndex,1);
                 this.current++;
+                this.freezeIndicator=false;
                 this.knownShell = null;
                 this.updateUI();
                 setStatus('Dealer discards a shell.');
@@ -422,7 +433,10 @@ function updateItems(el,items,interactive=false) {
             if(it==='Beer') {
                 div.addEventListener('click',()=>{
                     if(game.current<game.magazine.length) {
-                        game.current++; game.player.items.splice(i,1); game.updateUI();
+                        game.current++;
+                        game.freezeIndicator=false;
+                        game.player.items.splice(i,1);
+                        game.updateUI();
                         setStatus('You discarded a shell.');
                     }
                 });
@@ -448,8 +462,12 @@ function updateItems(el,items,interactive=false) {
             if(it==='Inverter') {
                 div.addEventListener('click',()=>{
                     if(game.current<game.magazine.length){
+                        const remain=game.magazine.slice(game.current);
+                        game.cachedLives=remain.filter(s=>s.type==='live').length;
+                        game.cachedBlanks=remain.filter(s=>s.type==='blank').length;
                         const s=game.magazine[game.current];
                         s.type = s.type==='live'?'blank':'live';
+                        game.freezeIndicator=true;
                         game.player.items.splice(i,1);
                         game.updateUI();
                         setStatus('You inverted the next shell.');
@@ -531,9 +549,17 @@ Game.prototype.updateUI=function(){
     if(bankEl) bankEl.textContent = this.bank;
     const indicator = document.getElementById('shellIndicator');
     if(indicator){
-        const remaining=this.magazine.slice(this.current);
-        const lives=remaining.filter(s=>s.type==='live').length;
-        const blanks=remaining.filter(s=>s.type==='blank').length;
+        let lives, blanks;
+        if(this.freezeIndicator){
+            lives=this.cachedLives;
+            blanks=this.cachedBlanks;
+        }else{
+            const remaining=this.magazine.slice(this.current);
+            lives=remaining.filter(s=>s.type==='live').length;
+            blanks=remaining.filter(s=>s.type==='blank').length;
+            this.cachedLives=lives;
+            this.cachedBlanks=blanks;
+        }
         indicator.textContent=`Live: ${lives} Blank: ${blanks}`;
         indicator.style.display=this.showIndicator?'block':'none';
     }
@@ -564,6 +590,7 @@ function applyItemEffect(user,item){
         case 'Beer':
             if(game.current < game.magazine.length){
                 game.current++;
+                game.freezeIndicator=false;
                 setStatus((isPlayer?'You':'Dealer')+' discarded a shell.');
             }
             break;
@@ -573,8 +600,12 @@ function applyItemEffect(user,item){
             break;
         case 'Inverter':
             if(game.current < game.magazine.length){
+                const remain=game.magazine.slice(game.current);
+                game.cachedLives=remain.filter(s=>s.type==='live').length;
+                game.cachedBlanks=remain.filter(s=>s.type==='blank').length;
                 const s = game.magazine[game.current];
                 s.type = s.type==='live'?'blank':'live';
+                game.freezeIndicator=true;
                 setStatus((isPlayer?'You':'Dealer')+' inverted the next shell.');
             }
             break;
