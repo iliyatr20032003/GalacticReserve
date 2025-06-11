@@ -32,8 +32,9 @@ The round ends when a player’s HP reaches 0 or the magazine is empty. Winning 
 |------|--------|
 | **Adrenaline** | Steal an item from another player and use it immediately. |
 | **Burner Phone** | Reveals type and position of a random future shell. |
-| **Inverter** | Converts current shell: blank ↔ live. |
-| **Expired Medicine** | 50% chance +2 HP, 50% chance −1 HP. |
+| **Inverter** | Converts current shell: blank ↔ live. *(fully implemented)* |
+| **Expired Medicine** | 50% chance +2 HP, 50% chance −1 HP. *(fully implemented)* |
+These items appear only in Double or Nothing mode.
 
 ### 3.3 Multiplayer only
 | Item | Effect |
@@ -49,7 +50,7 @@ else: |lives − blanks| = 1, lives + blanks = size
 ```
 Magazine is always shuffled on reload.
 
-## 5. Dealer AI *(partially implemented)*
+## 5. Dealer AI *(partially implemented – basic rules working)*
 The single-player Dealer follows deterministic rules:
 - Uses **Magnifying Glass** when the shell is unknown.
 - Uses **Inverter** if facing a blank and wants to attack.
@@ -106,6 +107,7 @@ stateDiagram
 - Adjustable animation speed (0.5×–2×). *(fully implemented)*
 - Option to save RNG seed for replays and debugging. *(fully implemented)*
 - Settings modal to toggle colorblind mode and enter RNG seed. *(fully implemented)*
+- Toggle for Double or Nothing mode enabling Inverter and Expired Medicine. *(fully implemented)*
 - Modding API (original uses Godot mods).
 - Scoring: Story uses time and leftover HP as money. Double or Nothing doubles the bank every three rounds; leaderboard via REST API.
 
