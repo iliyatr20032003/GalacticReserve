@@ -27,7 +27,7 @@ class Game {
             "Beer",
             "Hand Saw"
         ];
-        this.extraItems = ["Inverter", "Expired Medicine"];
+        this.extraItems = ["Inverter", "Expired Medicine", "Adrenaline", "Burner Phone"];
         // enable advanced items by default
         this.doubleMode = true;
         this.itemPool = this.basicItems.slice();
@@ -164,6 +164,16 @@ class Game {
                 setStatus('Dealer is hurt by Expired Medicine.');
             }
             this.updateUI();
+        }
+        const adIndex = this.dealer.items.indexOf('Adrenaline');
+        if(adIndex > -1 && this.player.items.length>0){
+            this.dealer.items.splice(adIndex,1);
+            applyItemEffect(this.dealer,'Adrenaline');
+        }
+        const phoneIndex = this.dealer.items.indexOf('Burner Phone');
+        if(phoneIndex > -1){
+            this.dealer.items.splice(phoneIndex,1);
+            applyItemEffect(this.dealer,'Burner Phone');
         }
         // look ahead if unknown
         if(this.knownShell === null) {
@@ -350,6 +360,20 @@ function updateItems(el,items,interactive=false) {
                     }
                 });
             }
+            if(it==='Adrenaline') {
+                div.addEventListener('click',()=>{
+                    if(game.player.items[i]!=='Adrenaline') return;
+                    game.player.items.splice(i,1);
+                    applyItemEffect(game.player,'Adrenaline');
+                });
+            }
+            if(it==='Burner Phone') {
+                div.addEventListener('click',()=>{
+                    if(game.player.items[i]!=='Burner Phone') return;
+                    game.player.items.splice(i,1);
+                    applyItemEffect(game.player,'Burner Phone');
+                });
+            }
             if(it==='Expired Medicine') {
                 div.addEventListener('click',()=>{
                     if(game.player.items[i]!=='Expired Medicine') return;
@@ -405,3 +429,67 @@ Game.prototype.updateUI=function(){
     updateItems(document.getElementById('dealerItems'),this.dealer.items,false);
     updateMagazine(document.getElementById('magazine'),this.magazine,this.current);
 };
+
+function applyItemEffect(user,item){
+    const isPlayer = user === game.player;
+    const opponent = isPlayer ? game.dealer : game.player;
+    switch(item){
+        case 'Cigarette Pack':
+            user.hp++;
+            break;
+        case 'Handcuffs':
+            if(isPlayer) game.dealerSkip = true; else game.playerSkip = true;
+            break;
+        case 'Magnifying Glass':
+            if(game.current < game.magazine.length){
+                setStatus((isPlayer?'Next shell is ':'Dealer sees next shell is ')+game.magazine[game.current].type);
+            }
+            break;
+        case 'Beer':
+            if(game.current < game.magazine.length){
+                game.current++;
+                setStatus((isPlayer?'You':'Dealer')+' discarded a shell.');
+            }
+            break;
+        case 'Hand Saw':
+            user.damageBoost = 2;
+            setStatus((isPlayer?'Your':'Dealer\'s')+' next shot will deal double damage.');
+            break;
+        case 'Inverter':
+            if(game.current < game.magazine.length){
+                const s = game.magazine[game.current];
+                s.type = s.type==='live'?'blank':'live';
+                setStatus((isPlayer?'You':'Dealer')+' inverted the next shell.');
+            }
+            break;
+        case 'Expired Medicine':
+            if(game.random()<0.5){
+                user.hp += 2;
+                setStatus((isPlayer?'Expired Medicine healed you.':'Dealer heals with Expired Medicine.'));
+            }else{
+                user.hp -= 1;
+                setStatus((isPlayer?'Expired Medicine hurt you.':'Dealer is hurt by Expired Medicine.'));
+            }
+            break;
+        case 'Burner Phone':
+            if(game.current < game.magazine.length-1){
+                const pos = game.current + 1 + Math.floor(game.random()*(game.magazine.length - game.current -1));
+                const type = game.magazine[pos].type;
+                setStatus((isPlayer?'Burner Phone':'Dealer\'s Burner Phone')+' reveals shell '+(pos+1)+' is '+type+'.');
+            }else{
+                setStatus(isPlayer?'No future shells to scan.':'Dealer finds no future shells.');
+            }
+            break;
+        case 'Adrenaline':
+            if(opponent.items.length>0){
+                const idx = Math.floor(game.random()*opponent.items.length);
+                const stolen = opponent.items.splice(idx,1)[0];
+                setStatus((isPlayer?'You':'Dealer')+' steal'+(isPlayer?'':'s')+' '+stolen+' using Adrenaline.');
+                applyItemEffect(user, stolen);
+            }else{
+                setStatus(isPlayer?'Dealer has no items to steal.':'You have no items left to steal.');
+            }
+            break;
+    }
+    game.updateUI();
+}
