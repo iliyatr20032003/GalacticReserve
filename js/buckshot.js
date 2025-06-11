@@ -34,8 +34,8 @@ class Game {
         this.doubleMode = true;
         this.itemPool = this.basicItems.slice();
         this.knownShell = null; // dealer knowledge of next shell
-        this.dealerSkip = false; // whether dealer loses next turn
-        this.playerSkip = false; // whether player loses next turn
+        this.dealerSkip = 0; // number of dealer turns to skip
+        this.playerSkip = 0; // number of player turns to skip
         this.seed = Date.now();
         this.animationSpeed = 1;
         this.dealerDelay = 2; // delay before dealer acts in seconds
@@ -91,8 +91,8 @@ class Game {
         this.magazine = this.generateLoad(magazineSize);
         this.current = 0;
         this.knownShell = null;
-        this.dealerSkip = false;
-        this.playerSkip = false;
+        this.dealerSkip = 0;
+        this.playerSkip = 0;
         this.playerKnown = {};
         this.dealerKnown = {};
         this.freezeIndicator = false;
@@ -142,8 +142,8 @@ class Game {
         this.magazine = this.generateLoad(magazineSize);
         this.current = 0;
         this.knownShell = null;
-        this.dealerSkip = false;
-        this.playerSkip = false;
+        this.dealerSkip = 0;
+        this.playerSkip = 0;
         this.playerKnown = {};
         this.dealerKnown = {};
         this.updateUI();
@@ -202,9 +202,9 @@ class Game {
 
     async dealerTurn() {
         this.setTurn(false);
-        if(this.dealerSkip) {
+        if(this.dealerSkip > 0) {
             setStatus('Dealer is restrained and loses a turn.');
-            this.dealerSkip = false;
+            this.dealerSkip--;
             await this.sleep(this.dealerDelay*1000);
             this.setTurn(true);
             if(this.player.hp>0 && this.dealer.hp>0) setStatus('Your move.');
@@ -213,7 +213,7 @@ class Game {
         // restrain player if possible
         const cuffsIndex = this.dealer.items.indexOf('Handcuffs');
         if(cuffsIndex > -1) {
-            this.playerSkip = true;
+            this.playerSkip += 1;
             this.dealer.items.splice(cuffsIndex,1);
             this.updateUI();
             setStatus('Dealer uses Handcuffs on you.');
@@ -300,6 +300,10 @@ class Game {
             } else {
                 this.knownShell = null;
                 this.shoot(this.dealer, this.dealer);
+                if(this.playerSkip > 0) {
+                    this.playerSkip++;
+                    this.updateUI();
+                }
                 await this.sleep(this.dealerDelay*1000);
                 this.setTurn(true);
                 if(this.player.hp>0 && this.dealer.hp>0) setStatus('Your move.');
@@ -396,16 +400,20 @@ if(settingsBtn){
 }
 shootSelf.addEventListener('click',()=>{
     if(!game.isPlayerTurn) return;
-    if(game.playerSkip){
+    if(game.playerSkip > 0){
         game.setTurn(false);
         setStatus('You are restrained and lose a turn.');
-        game.playerSkip=false;
+        game.playerSkip--;
         setTimeout(()=>game.dealerTurn(),game.dealerDelay*1000);
         return;
     }
     game.setTurn(false);
     const result = game.shoot(game.player, game.player);
     if(result === 'blank') {
+        if(game.dealerSkip > 0) {
+            game.dealerSkip++;
+            game.updateUI();
+        }
         // player keeps the turn on a blank
         if(game.player.hp>0 && game.dealer.hp>0) game.setTurn(true);
     } else if(game.player.hp>0 && game.dealer.hp>0 &&
@@ -415,10 +423,10 @@ shootSelf.addEventListener('click',()=>{
 });
 shootDealer.addEventListener('click',()=>{
     if(!game.isPlayerTurn) return;
-    if(game.playerSkip){
+    if(game.playerSkip > 0){
         game.setTurn(false);
         setStatus('You are restrained and lose a turn.');
-        game.playerSkip=false;
+        game.playerSkip--;
         setTimeout(()=>game.dealerTurn(),game.dealerDelay*1000);
         return;
     }
@@ -434,7 +442,7 @@ function updateItems(el,items,interactive=false) {
         div.className='item';
         div.textContent=it;
 
-        if(interactive && game.isPlayerTurn){
+        if(interactive && game.isPlayerTurn && game.playerSkip === 0){
             if(it==='Cigarette Pack') {
                 div.addEventListener('click',()=>{
                     if(game.player.items[i]!=='Cigarette Pack') return;
@@ -470,7 +478,7 @@ function updateItems(el,items,interactive=false) {
             if(it==='Handcuffs') {
                 div.addEventListener('click',()=>{
                     if(game.player.items[i]!=='Handcuffs') return;
-                    game.dealerSkip = true;
+                    game.dealerSkip += 1;
                     game.player.items.splice(i,1);
                     game.updateUI();
                     setStatus('Dealer will miss their next turn.');
@@ -591,8 +599,8 @@ Game.prototype.updateUI=function(){
     }
     const pcuffs=document.getElementById('playerCuffs');
     const dcuffs=document.getElementById('dealerCuffs');
-    if(pcuffs) pcuffs.style.display=this.playerSkip?'inline':'none';
-    if(dcuffs) dcuffs.style.display=this.dealerSkip?'inline':'none';
+    if(pcuffs) pcuffs.style.display=this.playerSkip>0?'inline':'none';
+    if(dcuffs) dcuffs.style.display=this.dealerSkip>0?'inline':'none';
 };
 
 function applyItemEffect(user,item){
@@ -604,7 +612,7 @@ function applyItemEffect(user,item){
             user.hp = Math.min(user.hp, user.maxHp);
             break;
         case 'Handcuffs':
-            if(isPlayer) game.dealerSkip = true; else game.playerSkip = true;
+            if(isPlayer) game.dealerSkip += 1; else game.playerSkip += 1;
             break;
         case 'Magnifying Glass':
             if(game.current < game.magazine.length){
