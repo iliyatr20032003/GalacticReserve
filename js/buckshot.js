@@ -38,7 +38,6 @@ class Game {
         this.playerSkip = false; // whether player loses next turn
         this.seed = Date.now();
         this.animationSpeed = 1;
-        this.dealerDelay = 0.5; // delay before dealer acts in seconds
         this.showIndicator = true; // display shell counter
         this.keepMagnify = false; // debug: keep magnifying glass after use
         this.keepCigarette = false; // debug: keep cigarette pack after use
@@ -289,8 +288,6 @@ const keepMagToggle=document.getElementById('keepMagToggle');
 const keepCigToggle=document.getElementById('keepCigToggle');
 const speedRange=document.getElementById('speedRange');
 const speedDisplay=document.getElementById('speedDisplay');
-const delayRange=document.getElementById('delayRange');
-const delayDisplay=document.getElementById('delayDisplay');
 const adrenalineModal=document.getElementById('adrenalineModal');
 const adrenalineItems=document.getElementById('adrenalineItems');
 const adrenalineTimer=document.getElementById('adrenalineTimer');
@@ -321,14 +318,6 @@ if(speedRange){
     });
     if(speedDisplay) speedDisplay.textContent=speedRange.value+'x';
 }
-if(delayRange){
-    delayRange.addEventListener('input',()=>{
-        game.dealerDelay=parseFloat(delayRange.value);
-        if(delayDisplay) delayDisplay.textContent=delayRange.value+'s';
-    });
-    if(delayDisplay) delayDisplay.textContent=delayRange.value+'s';
-    game.dealerDelay=parseFloat(delayRange.value);
-}
 if(doubleModeToggle){
     game.doubleMode = doubleModeToggle.checked;
     doubleModeToggle.addEventListener("change",()=>{
@@ -353,25 +342,25 @@ shootSelf.addEventListener('click',()=>{
     if(game.playerSkip){
         setStatus('You are restrained and lose a turn.');
         game.playerSkip=false;
-        setTimeout(()=>game.dealerTurn(),game.dealerDelay*1000);
+        setTimeout(()=>game.dealerTurn(),500/game.animationSpeed);
         return;
     }
     const result = game.shoot(game.player, game.player);
     if(result !== 'blank' &&
        game.player.hp>0 && game.dealer.hp>0 &&
        game.current < game.magazine.length) {
-        setTimeout(()=>game.dealerTurn(),game.dealerDelay*1000);
+        setTimeout(()=>game.dealerTurn(),500/game.animationSpeed);
     }
 });
 shootDealer.addEventListener('click',()=>{
     if(game.playerSkip){
         setStatus('You are restrained and lose a turn.');
         game.playerSkip=false;
-        setTimeout(()=>game.dealerTurn(),game.dealerDelay*1000);
+        setTimeout(()=>game.dealerTurn(),500/game.animationSpeed);
         return;
     }
     game.shoot(game.dealer, game.player);
-    if(game.player.hp>0 && game.dealer.hp>0) setTimeout(()=>game.dealerTurn(),game.dealerDelay*1000);
+    if(game.player.hp>0 && game.dealer.hp>0) setTimeout(()=>game.dealerTurn(),500/game.animationSpeed);
 });
 
 function updateItems(el,items,interactive=false) {
@@ -521,10 +510,6 @@ Game.prototype.updateUI=function(){
         indicator.textContent=`Live: ${lives} Blank: ${blanks}`;
         indicator.style.display=this.showIndicator?'block':'none';
     }
-    const pcuffs=document.getElementById('playerCuffs');
-    const dcuffs=document.getElementById('dealerCuffs');
-    if(pcuffs) pcuffs.style.display=this.playerSkip?'inline':'none';
-    if(dcuffs) dcuffs.style.display=this.dealerSkip?'inline':'none';
 };
 
 function applyItemEffect(user,item){
