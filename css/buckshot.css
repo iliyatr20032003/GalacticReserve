@@ -118,3 +118,16 @@
 #adrenalineItems .item {
     cursor: pointer;
 }
+
+/* Indicator showing remaining shell counts */
+.shell-indicator {
+    position: fixed;
+    bottom: calc(20px + constant(safe-area-inset-bottom));
+    bottom: calc(20px + env(safe-area-inset-bottom));
+    right: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    z-index: 1100;
+}
