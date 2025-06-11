@@ -43,7 +43,6 @@ class Game {
         this.keepCigarette = false; // debug: keep cigarette pack after use
         this.playerKnown = {}; // indices of shells revealed to the player
         this.dealerKnown = {}; // indices of shells revealed to the dealer
-        this.roundOver = false; // track if the current round has ended
     }
 
     setSeed(seed) {
@@ -64,7 +63,6 @@ class Game {
 
     startRound() {
         this.round++;
-        this.roundOver = false;
         const seedInput = document.getElementById('seedInput');
         if(seedInput && seedInput.value) this.setSeed(Number(seedInput.value));
         const hp = 2 + Math.floor(this.random() * 3); // 2-4
@@ -135,17 +133,7 @@ class Game {
         setStatus('New magazine loaded.');
     }
 
-    checkHp(){
-        if(this.roundOver) return;
-        if(this.player.hp<=0 || this.dealer.hp<=0){
-            const winner = this.player.hp>0 ? this.player : this.dealer;
-            this.endRound(winner);
-        }
-    }
-
     endRound(winner) {
-        if(this.roundOver) return;
-        this.roundOver = true;
         disableControls();
         if(winner === this.player) {
             this.bank += this.player.hp;
@@ -522,7 +510,6 @@ Game.prototype.updateUI=function(){
         indicator.textContent=`Live: ${lives} Blank: ${blanks}`;
         indicator.style.display=this.showIndicator?'block':'none';
     }
-    this.checkHp();
 };
 
 function applyItemEffect(user,item){
@@ -633,6 +620,3 @@ function showAdrenalineMenu(user, opponent){
         adrenalineItems.appendChild(div);
     });
 }
-
-// Continuous HP check every 100ms
-setInterval(()=>game.checkHp(),100);
