@@ -19,15 +19,19 @@ class Game {
         this.magazine = [];
         this.current = 0;
         this.itemPool = ['Cigarette Pack', 'Handcuffs', 'Magnifying Glass', 'Beer'];
+        this.knownShell = null; // dealer knowledge of next shell
+        this.dealerSkip = false; // whether dealer loses next turn
     }
 
     startRound() {
         this.player.hp = 3;
         this.dealer.hp = 3;
         this.player.items = this.randomItems();
-        this.dealer.items = [];
+        this.dealer.items = this.randomItems();
         this.magazine = this.generateLoad(4);
         this.current = 0;
+        this.knownShell = null;
+        this.dealerSkip = false;
         this.updateUI();
         setStatus('Round started. Your move.');
         enableControls();
@@ -61,21 +65,70 @@ class Game {
         return shells;
     }
 
-    shoot(target) {
+    shoot(target, shooter = target) {
         if(this.current>=this.magazine.length) {
             setStatus('Magazine empty. Start a new round.');
             return;
         }
         const shell=this.magazine[this.current++];
         if(shell.type==='live') {
-            target.hp--; setStatus(target.name+' was hit!');
+            target.hp--; setStatus(shooter.name+' shot '+target.name+'!');
         } else {
-            setStatus('Click! It was blank.');
+            setStatus(shooter.name+' fired a blank.');
         }
         this.updateUI();
         if(this.player.hp<=0 || this.dealer.hp<=0) {
             disableControls();
             setStatus((this.player.hp>0?'You win!':'Dealer wins!')+' Start again?');
+        }
+    }
+
+    dealerTurn() {
+        if(this.dealerSkip) {
+            setStatus('Dealer is restrained and loses a turn.');
+            this.dealerSkip = false;
+            return;
+        }
+        // heal if low hp
+        const cigIndex = this.dealer.items.indexOf('Cigarette Pack');
+        if(this.dealer.hp <= 2 && cigIndex > -1) {
+            this.dealer.hp++;
+            this.dealer.items.splice(cigIndex,1);
+            this.updateUI();
+            setStatus('Dealer uses a Cigarette Pack.');
+        }
+        // look ahead if unknown
+        if(this.knownShell === null) {
+            const magIndex = this.dealer.items.indexOf('Magnifying Glass');
+            if(magIndex > -1 && this.current < this.magazine.length) {
+                this.knownShell = this.magazine[this.current].type;
+                this.dealer.items.splice(magIndex,1);
+                this.updateUI();
+                setStatus('Dealer inspects the next shell.');
+            }
+        }
+        if(this.current >= this.magazine.length) {
+            setStatus('Magazine empty. Start a new round.');
+            return;
+        }
+        let nextType = this.knownShell || this.magazine[this.current].type;
+        if(nextType === 'blank') {
+            const beerIndex = this.dealer.items.indexOf('Beer');
+            if(beerIndex > -1) {
+                this.dealer.items.splice(beerIndex,1);
+                this.current++;
+                this.knownShell = null;
+                this.updateUI();
+                setStatus('Dealer discards a shell.');
+                return;
+            } else {
+                this.knownShell = null;
+                this.shoot(this.dealer, this.dealer);
+                return;
+            }
+        } else {
+            this.knownShell = null;
+            this.shoot(this.player, this.dealer);
         }
     }
 }
@@ -86,8 +139,14 @@ const shootSelf=document.getElementById('shootSelf');
 const shootDealer=document.getElementById('shootDealer');
 
 startBtn.addEventListener('click',()=>game.startRound());
-shootSelf.addEventListener('click',()=>game.shoot(game.player));
-shootDealer.addEventListener('click',()=>game.shoot(game.dealer));
+shootSelf.addEventListener('click',()=>{
+    game.shoot(game.player, game.player);
+    if(game.player.hp>0 && game.dealer.hp>0) setTimeout(()=>game.dealerTurn(),500);
+});
+shootDealer.addEventListener('click',()=>{
+    game.shoot(game.dealer, game.player);
+    if(game.player.hp>0 && game.dealer.hp>0) setTimeout(()=>game.dealerTurn(),500);
+});
 
 function updateItems(el,items) {
     el.innerHTML='';
@@ -115,6 +174,15 @@ function updateItems(el,items) {
                     game.current++; game.player.items.splice(i,1); game.updateUI();
                     setStatus('You discarded a shell.');
                 }
+            });
+        }
+        if(it==='Handcuffs') {
+            div.addEventListener('click',()=>{
+                if(game.player.items[i]!=='Handcuffs') return;
+                game.dealerSkip = true;
+                game.player.items.splice(i,1);
+                game.updateUI();
+                setStatus('Dealer will miss their next turn.');
             });
         }
         el.appendChild(div);
