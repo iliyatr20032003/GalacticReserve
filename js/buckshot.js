@@ -272,17 +272,30 @@ function disableControls() {
 function setStatus(text){
     document.getElementById('status').textContent=text;
 }
+function setHpBar(bar,hp,maxHp){
+    if(!bar) return;
+    const base=Math.min(hp,maxHp);
+    const over1=Math.max(0,Math.min(hp-maxHp,maxHp));
+    const over2=Math.max(0,hp-2*maxHp);
+    const basePct=base/maxHp*100;
+    const greenPct=over1/maxHp*100;
+    const yellowPct=Math.min(over2/maxHp*100,100-basePct-greenPct);
+    let stops=`red 0%, red ${basePct}%`;
+    if(greenPct>0){
+        stops+=`, green ${basePct}%, green ${basePct+greenPct}%`;
+    }
+    if(yellowPct>0){
+        stops+=`, yellow ${basePct+greenPct}%, yellow ${basePct+greenPct+yellowPct}%`;
+    }
+    bar.style.background=`linear-gradient(to right, ${stops})`;
+}
 Game.prototype.updateUI=function(){
     document.getElementById('playerHp').textContent=this.player.hp;
     document.getElementById('dealerHp').textContent=this.dealer.hp;
     const pBar=document.getElementById('playerHpBar');
     const dBar=document.getElementById('dealerHpBar');
-    if(pBar){
-        pBar.style.width=(100*this.player.hp/this.player.maxHp)+'%';
-    }
-    if(dBar){
-        dBar.style.width=(100*this.dealer.hp/this.dealer.maxHp)+'%';
-    }
+    setHpBar(pBar,this.player.hp,this.player.maxHp);
+    setHpBar(dBar,this.dealer.hp,this.dealer.maxHp);
     updateItems(document.getElementById('playerItems'),this.player.items);
     updateItems(document.getElementById('dealerItems'),this.dealer.items);
     updateMagazine(document.getElementById('magazine'),this.magazine,this.current);
