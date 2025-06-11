@@ -20,9 +20,20 @@ class Game {
         this.dealer = new Player('Dealer');
         this.magazine = [];
         this.current = 0;
-        this.itemPool = ['Cigarette Pack', 'Handcuffs', 'Magnifying Glass', 'Beer', 'Hand Saw'];
+        this.basicItems = [
+            "Cigarette Pack",
+            "Handcuffs",
+            "Magnifying Glass",
+            "Beer",
+            "Hand Saw"
+        ];
+        this.extraItems = ["Inverter", "Expired Medicine"];
+        // enable advanced items by default
+        this.doubleMode = true;
+        this.itemPool = this.basicItems.slice();
         this.knownShell = null; // dealer knowledge of next shell
         this.dealerSkip = false; // whether dealer loses next turn
+        this.playerSkip = false; // whether player loses next turn
         this.seed = Date.now();
         this.animationSpeed = 1;
         this.keepMagnify = false; // debug: keep magnifying glass after use
@@ -40,6 +51,11 @@ class Game {
         return this.seed / 233280;
     }
 
+    updateItemPool() {
+        this.itemPool = this.basicItems.slice();
+        if(this.doubleMode) this.itemPool = this.itemPool.concat(this.extraItems);
+    }
+
     startRound() {
         const seedInput = document.getElementById('seedInput');
         if(seedInput && seedInput.value) this.setSeed(Number(seedInput.value));
@@ -48,6 +64,7 @@ class Game {
         this.dealer.hp = this.dealer.maxHp = hp;
         this.player.damageBoost = 1;
         this.dealer.damageBoost = 1;
+        this.updateItemPool();
         this.player.items = this.randomItems();
         this.dealer.items = this.randomItems();
         const magazineSize = 2 + Math.floor(this.random()*7); // 2-8
@@ -55,6 +72,7 @@ class Game {
         this.current = 0;
         this.knownShell = null;
         this.dealerSkip = false;
+        this.playerSkip = false;
         this.updateUI();
         setStatus('Round started. Your move.');
         enableControls();
@@ -105,6 +123,11 @@ class Game {
         if(this.player.hp<=0 || this.dealer.hp<=0) {
             disableControls();
             setStatus((this.player.hp>0?'You win!':'Dealer wins!')+' Start again?');
+            return;
+        }
+        if(this.current>=this.magazine.length){
+            disableControls();
+            setStatus('Magazine empty. Start a new round.');
         }
     }
 
@@ -114,6 +137,14 @@ class Game {
             this.dealerSkip = false;
             return;
         }
+        // restrain player if possible
+        const cuffsIndex = this.dealer.items.indexOf('Handcuffs');
+        if(cuffsIndex > -1) {
+            this.playerSkip = true;
+            this.dealer.items.splice(cuffsIndex,1);
+            this.updateUI();
+            setStatus('Dealer uses Handcuffs on you.');
+        }
         // heal if low hp
         const cigIndex = this.dealer.items.indexOf('Cigarette Pack');
         if(this.dealer.hp <= 2 && cigIndex > -1) {
@@ -121,6 +152,18 @@ class Game {
             this.dealer.items.splice(cigIndex,1);
             this.updateUI();
             setStatus('Dealer uses a Cigarette Pack.');
+        }
+        const medIndex = this.dealer.items.indexOf('Expired Medicine');
+        if(medIndex > -1 && this.dealer.hp < this.dealer.maxHp) {
+            this.dealer.items.splice(medIndex,1);
+            if(this.random() < 0.5) {
+                this.dealer.hp += 2;
+                setStatus('Dealer heals with Expired Medicine.');
+            } else {
+                this.dealer.hp -= 1;
+                setStatus('Dealer is hurt by Expired Medicine.');
+            }
+            this.updateUI();
         }
         // look ahead if unknown
         if(this.knownShell === null) {
@@ -137,6 +180,14 @@ class Game {
             return;
         }
         let nextType = this.knownShell || this.magazine[this.current].type;
+        const invIndex = this.dealer.items.indexOf('Inverter');
+        if(nextType === 'blank' && invIndex > -1) {
+            this.magazine[this.current].type = 'live';
+            nextType = 'live';
+            this.dealer.items.splice(invIndex,1);
+            this.updateUI();
+            setStatus('Dealer inverts the next shell.');
+        }
         if(nextType === 'blank') {
             const beerIndex = this.dealer.items.indexOf('Beer');
             if(beerIndex > -1) {
@@ -177,6 +228,7 @@ const keepCigToggle=document.getElementById('keepCigToggle');
 const speedRange=document.getElementById('speedRange');
 const speedDisplay=document.getElementById('speedDisplay');
 
+const doubleModeToggle=document.getElementById("doubleModeToggle");
 if(colorblindToggle){
     colorblindToggle.addEventListener('change',()=>{
         document.querySelector('.bs-container').classList.toggle('colorblind', colorblindToggle.checked);
@@ -201,6 +253,12 @@ if(speedRange){
     });
     if(speedDisplay) speedDisplay.textContent=speedRange.value+'x';
 }
+if(doubleModeToggle){
+    game.doubleMode = doubleModeToggle.checked;
+    doubleModeToggle.addEventListener("change",()=>{
+        game.doubleMode = doubleModeToggle.checked;
+    });
+}
 
 startBtn.addEventListener('click',()=>game.startRound());
 if(settingsBtn){
@@ -209,10 +267,22 @@ if(settingsBtn){
     });
 }
 shootSelf.addEventListener('click',()=>{
+    if(game.playerSkip){
+        setStatus('You are restrained and lose a turn.');
+        game.playerSkip=false;
+        setTimeout(()=>game.dealerTurn(),500/game.animationSpeed);
+        return;
+    }
     game.shoot(game.player, game.player);
     if(game.player.hp>0 && game.dealer.hp>0) setTimeout(()=>game.dealerTurn(),500/game.animationSpeed);
 });
 shootDealer.addEventListener('click',()=>{
+    if(game.playerSkip){
+        setStatus('You are restrained and lose a turn.');
+        game.playerSkip=false;
+        setTimeout(()=>game.dealerTurn(),500/game.animationSpeed);
+        return;
+    }
     game.shoot(game.dealer, game.player);
     if(game.player.hp>0 && game.dealer.hp>0) setTimeout(()=>game.dealerTurn(),500/game.animationSpeed);
 });
@@ -267,6 +337,31 @@ function updateItems(el,items,interactive=false) {
                     game.player.items.splice(i,1);
                     game.updateUI();
                     setStatus('Your next shot will deal double damage.');
+                });
+            }
+            if(it==='Inverter') {
+                div.addEventListener('click',()=>{
+                    if(game.current<game.magazine.length){
+                        const s=game.magazine[game.current];
+                        s.type = s.type==='live'?'blank':'live';
+                        game.player.items.splice(i,1);
+                        game.updateUI();
+                        setStatus('You inverted the next shell.');
+                    }
+                });
+            }
+            if(it==='Expired Medicine') {
+                div.addEventListener('click',()=>{
+                    if(game.player.items[i]!=='Expired Medicine') return;
+                    if(game.random()<0.5){
+                        game.player.hp += 2;
+                        setStatus('Expired Medicine healed you.');
+                    }else{
+                        game.player.hp -= 1;
+                        setStatus('Expired Medicine hurt you.');
+                    }
+                    game.player.items.splice(i,1);
+                    game.updateUI();
                 });
             }
         }
