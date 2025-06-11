@@ -30,11 +30,13 @@
             <div class="player" id="player">
                 <h2>Player</h2>
                 <div>HP: <span id="playerHp">3</span></div>
+                <div class="hp-bar"><div class="hp-fill" id="playerHpBar"></div></div>
                 <div id="playerItems" class="items"></div>
             </div>
             <div class="player" id="dealer">
                 <h2>Dealer</h2>
                 <div>HP: <span id="dealerHp">3</span></div>
+                <div class="hp-bar"><div class="hp-fill" id="dealerHpBar"></div></div>
                 <div id="dealerItems" class="items"></div>
             </div>
         </div>
@@ -47,6 +49,9 @@
             <input id="seedInput" type="number" placeholder="Seed (optional)">
             <br>
             <label><input type="checkbox" id="colorblindToggle"> Colorblind Mode</label>
+            <br>
+            <label>Animation Speed: <span id="speedDisplay">1x</span></label>
+            <input id="speedRange" type="range" min="0.5" max="2" step="0.1" value="1">
         </div>
     </div>
 </body>

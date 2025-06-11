@@ -8,6 +8,7 @@ class Player {
     constructor(name) {
         this.name = name;
         this.hp = 3;
+        this.maxHp = 3;
         this.items = [];
         this.damageBoost = 1; // multiplier for next live shot
     }
@@ -23,6 +24,7 @@ class Game {
         this.knownShell = null; // dealer knowledge of next shell
         this.dealerSkip = false; // whether dealer loses next turn
         this.seed = Date.now();
+        this.animationSpeed = 1;
     }
 
     setSeed(seed) {
@@ -40,8 +42,8 @@ class Game {
         const seedInput = document.getElementById('seedInput');
         if(seedInput && seedInput.value) this.setSeed(Number(seedInput.value));
         const hp = 2 + Math.floor(this.random() * 3); // 2-4
-        this.player.hp = hp;
-        this.dealer.hp = hp;
+        this.player.hp = this.player.maxHp = hp;
+        this.dealer.hp = this.dealer.maxHp = hp;
         this.player.damageBoost = 1;
         this.dealer.damageBoost = 1;
         this.player.items = this.randomItems();
@@ -168,11 +170,20 @@ const shootDealer=document.getElementById('shootDealer');
 const settingsBtn=document.getElementById('settingsButton');
 const settingsModal=document.getElementById('settingsModal');
 const colorblindToggle=document.getElementById('colorblindToggle');
+const speedRange=document.getElementById('speedRange');
+const speedDisplay=document.getElementById('speedDisplay');
 
 if(colorblindToggle){
     colorblindToggle.addEventListener('change',()=>{
         document.querySelector('.bs-container').classList.toggle('colorblind', colorblindToggle.checked);
     });
+}
+if(speedRange){
+    speedRange.addEventListener('input',()=>{
+        game.animationSpeed=parseFloat(speedRange.value);
+        if(speedDisplay) speedDisplay.textContent=speedRange.value+'x';
+    });
+    if(speedDisplay) speedDisplay.textContent=speedRange.value+'x';
 }
 
 startBtn.addEventListener('click',()=>game.startRound());
@@ -183,11 +194,11 @@ if(settingsBtn){
 }
 shootSelf.addEventListener('click',()=>{
     game.shoot(game.player, game.player);
-    if(game.player.hp>0 && game.dealer.hp>0) setTimeout(()=>game.dealerTurn(),500);
+    if(game.player.hp>0 && game.dealer.hp>0) setTimeout(()=>game.dealerTurn(),500/game.animationSpeed);
 });
 shootDealer.addEventListener('click',()=>{
     game.shoot(game.dealer, game.player);
-    if(game.player.hp>0 && game.dealer.hp>0) setTimeout(()=>game.dealerTurn(),500);
+    if(game.player.hp>0 && game.dealer.hp>0) setTimeout(()=>game.dealerTurn(),500/game.animationSpeed);
 });
 
 function updateItems(el,items) {
@@ -264,6 +275,14 @@ function setStatus(text){
 Game.prototype.updateUI=function(){
     document.getElementById('playerHp').textContent=this.player.hp;
     document.getElementById('dealerHp').textContent=this.dealer.hp;
+    const pBar=document.getElementById('playerHpBar');
+    const dBar=document.getElementById('dealerHpBar');
+    if(pBar){
+        pBar.style.width=(100*this.player.hp/this.player.maxHp)+'%';
+    }
+    if(dBar){
+        dBar.style.width=(100*this.dealer.hp/this.dealer.maxHp)+'%';
+    }
     updateItems(document.getElementById('playerItems'),this.player.items);
     updateItems(document.getElementById('dealerItems'),this.dealer.items);
     updateMagazine(document.getElementById('magazine'),this.magazine,this.current);
