@@ -217,55 +217,58 @@ shootDealer.addEventListener('click',()=>{
     if(game.player.hp>0 && game.dealer.hp>0) setTimeout(()=>game.dealerTurn(),500/game.animationSpeed);
 });
 
-function updateItems(el,items) {
+function updateItems(el,items,interactive=false) {
     el.innerHTML='';
     items.forEach((it,i)=>{
         const div=document.createElement('div');
         div.className='item';
         div.textContent=it;
-        if(it==='Cigarette Pack') {
-            div.addEventListener('click',()=>{
-                if(game.player.items[i]!=='Cigarette Pack') return;
-                game.player.hp++;
-                if(!game.keepCigarette) game.player.items.splice(i,1);
-                game.updateUI();
-            });
-        }
-        if(it==='Magnifying Glass') {
-            div.addEventListener('click',()=>{
-                if(game.player.items[i]!=='Magnifying Glass') return;
-                if(game.current<game.magazine.length) {
-                    setStatus('Next shell is '+game.magazine[game.current].type);
-                    if(!game.keepMagnify) game.player.items.splice(i,1);
+
+        if(interactive){
+            if(it==='Cigarette Pack') {
+                div.addEventListener('click',()=>{
+                    if(game.player.items[i]!=='Cigarette Pack') return;
+                    game.player.hp++;
+                    if(!game.keepCigarette) game.player.items.splice(i,1);
                     game.updateUI();
-                }
-            });
-        }
-        if(it==='Beer') {
-            div.addEventListener('click',()=>{
-                if(game.current<game.magazine.length) {
-                    game.current++; game.player.items.splice(i,1); game.updateUI();
-                    setStatus('You discarded a shell.');
-                }
-            });
-        }
-        if(it==='Handcuffs') {
-            div.addEventListener('click',()=>{
-                if(game.player.items[i]!=='Handcuffs') return;
-                game.dealerSkip = true;
-                game.player.items.splice(i,1);
-                game.updateUI();
-                setStatus('Dealer will miss their next turn.');
-            });
-        }
-        if(it==='Hand Saw') {
-            div.addEventListener('click',()=>{
-                if(game.player.items[i]!=='Hand Saw') return;
-                game.player.damageBoost = 2;
-                game.player.items.splice(i,1);
-                game.updateUI();
-                setStatus('Your next shot will deal double damage.');
-            });
+                });
+            }
+            if(it==='Magnifying Glass') {
+                div.addEventListener('click',()=>{
+                    if(game.player.items[i]!=='Magnifying Glass') return;
+                    if(game.current<game.magazine.length) {
+                        setStatus('Next shell is '+game.magazine[game.current].type);
+                        if(!game.keepMagnify) game.player.items.splice(i,1);
+                        game.updateUI();
+                    }
+                });
+            }
+            if(it==='Beer') {
+                div.addEventListener('click',()=>{
+                    if(game.current<game.magazine.length) {
+                        game.current++; game.player.items.splice(i,1); game.updateUI();
+                        setStatus('You discarded a shell.');
+                    }
+                });
+            }
+            if(it==='Handcuffs') {
+                div.addEventListener('click',()=>{
+                    if(game.player.items[i]!=='Handcuffs') return;
+                    game.dealerSkip = true;
+                    game.player.items.splice(i,1);
+                    game.updateUI();
+                    setStatus('Dealer will miss their next turn.');
+                });
+            }
+            if(it==='Hand Saw') {
+                div.addEventListener('click',()=>{
+                    if(game.player.items[i]!=='Hand Saw') return;
+                    game.player.damageBoost = 2;
+                    game.player.items.splice(i,1);
+                    game.updateUI();
+                    setStatus('Your next shot will deal double damage.');
+                });
+            }
         }
         el.appendChild(div);
     });
@@ -303,7 +306,7 @@ Game.prototype.updateUI=function(){
     if(dBar){
         dBar.style.width=(100*this.dealer.hp/this.dealer.maxHp)+'%';
     }
-    updateItems(document.getElementById('playerItems'),this.player.items);
-    updateItems(document.getElementById('dealerItems'),this.dealer.items);
+    updateItems(document.getElementById('playerItems'),this.player.items,true);
+    updateItems(document.getElementById('dealerItems'),this.dealer.items,false);
     updateMagazine(document.getElementById('magazine'),this.magazine,this.current);
 };
