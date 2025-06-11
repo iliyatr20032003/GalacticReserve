@@ -38,7 +38,7 @@ class Game {
         this.playerSkip = false; // whether player loses next turn
         this.seed = Date.now();
         this.animationSpeed = 1;
-        this.dealerDelay = 0.5; // delay before dealer acts in seconds
+        this.dealerDelay = 2; // delay before dealer acts in seconds
         this.showIndicator = true; // display shell counter
         this.keepMagnify = false; // debug: keep magnifying glass after use
         this.keepCigarette = false; // debug: keep cigarette pack after use
