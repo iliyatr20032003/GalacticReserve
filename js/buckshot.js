@@ -25,6 +25,8 @@ class Game {
         this.dealerSkip = false; // whether dealer loses next turn
         this.seed = Date.now();
         this.animationSpeed = 1;
+        this.keepMagnify = false; // debug: keep magnifying glass after use
+        this.keepCigarette = false; // debug: keep cigarette pack after use
     }
 
     setSeed(seed) {
@@ -170,12 +172,26 @@ const shootDealer=document.getElementById('shootDealer');
 const settingsBtn=document.getElementById('settingsButton');
 const settingsModal=document.getElementById('settingsModal');
 const colorblindToggle=document.getElementById('colorblindToggle');
+const keepMagToggle=document.getElementById('keepMagToggle');
+const keepCigToggle=document.getElementById('keepCigToggle');
 const speedRange=document.getElementById('speedRange');
 const speedDisplay=document.getElementById('speedDisplay');
 
 if(colorblindToggle){
     colorblindToggle.addEventListener('change',()=>{
         document.querySelector('.bs-container').classList.toggle('colorblind', colorblindToggle.checked);
+    });
+}
+if(keepMagToggle){
+    game.keepMagnify = keepMagToggle.checked;
+    keepMagToggle.addEventListener('change',()=>{
+        game.keepMagnify = keepMagToggle.checked;
+    });
+}
+if(keepCigToggle){
+    game.keepCigarette = keepCigToggle.checked;
+    keepCigToggle.addEventListener('change',()=>{
+        game.keepCigarette = keepCigToggle.checked;
     });
 }
 if(speedRange){
@@ -211,14 +227,18 @@ function updateItems(el,items) {
             div.addEventListener('click',()=>{
                 if(game.player.items[i]!=='Cigarette Pack') return;
                 game.player.hp++;
-                game.player.items.splice(i,1);
+                if(!game.keepCigarette) game.player.items.splice(i,1);
                 game.updateUI();
             });
         }
         if(it==='Magnifying Glass') {
             div.addEventListener('click',()=>{
-                if(game.current<game.magazine.length)
+                if(game.player.items[i]!=='Magnifying Glass') return;
+                if(game.current<game.magazine.length) {
                     setStatus('Next shell is '+game.magazine[game.current].type);
+                    if(!game.keepMagnify) game.player.items.splice(i,1);
+                    game.updateUI();
+                }
             });
         }
         if(it==='Beer') {
