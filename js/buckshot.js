@@ -264,6 +264,9 @@ const keepMagToggle=document.getElementById('keepMagToggle');
 const keepCigToggle=document.getElementById('keepCigToggle');
 const speedRange=document.getElementById('speedRange');
 const speedDisplay=document.getElementById('speedDisplay');
+const adrenalineModal=document.getElementById('adrenalineModal');
+const adrenalineItems=document.getElementById('adrenalineItems');
+const adrenalineTimer=document.getElementById('adrenalineTimer');
 
 const doubleModeToggle=document.getElementById("doubleModeToggle");
 if(colorblindToggle){
@@ -391,6 +394,7 @@ function updateItems(el,items,interactive=false) {
                 div.addEventListener('click',()=>{
                     if(game.player.items[i]!=='Adrenaline') return;
                     game.player.items.splice(i,1);
+                    game.updateUI();
                     applyItemEffect(game.player,'Adrenaline');
                 });
             }
@@ -521,14 +525,51 @@ function applyItemEffect(user,item){
             break;
         case 'Adrenaline':
             if(opponent.items.length>0){
-                const idx = Math.floor(game.random()*opponent.items.length);
-                const stolen = opponent.items.splice(idx,1)[0];
-                setStatus((isPlayer?'You':'Dealer')+' steal'+(isPlayer?'':'s')+' '+stolen+' using Adrenaline.');
-                applyItemEffect(user, stolen);
+                if(isPlayer){
+                    showAdrenalineMenu(user, opponent);
+                }else{
+                    const idx = Math.floor(game.random()*opponent.items.length);
+                    const stolen = opponent.items.splice(idx,1)[0];
+                    setStatus('Dealer steals '+stolen+' using Adrenaline.');
+                    applyItemEffect(user, stolen);
+                }
             }else{
                 setStatus(isPlayer?'Dealer has no items to steal.':'You have no items left to steal.');
             }
             break;
     }
     game.updateUI();
+}
+
+let adrenalineInterval;
+function showAdrenalineMenu(user, opponent){
+    adrenalineItems.innerHTML='';
+    adrenalineModal.style.display='flex';
+    let remaining=10;
+    adrenalineTimer.textContent=remaining;
+    adrenalineInterval=setInterval(()=>{
+        remaining--;
+        adrenalineTimer.textContent=remaining;
+        if(remaining<=0){
+            clearInterval(adrenalineInterval);
+            adrenalineModal.style.display='none';
+            const idx=Math.floor(game.random()*opponent.items.length);
+            const stolen=opponent.items.splice(idx,1)[0];
+            setStatus('Time up! You automatically steal '+stolen+'.');
+            applyItemEffect(user, stolen);
+        }
+    },1000);
+    opponent.items.forEach((it,i)=>{
+        const div=document.createElement('div');
+        div.className='item';
+        div.textContent=it;
+        div.addEventListener('click',()=>{
+            clearInterval(adrenalineInterval);
+            adrenalineModal.style.display='none';
+            const stolen=opponent.items.splice(i,1)[0];
+            setStatus('You steal '+stolen+' using Adrenaline.');
+            applyItemEffect(user, stolen);
+        });
+        adrenalineItems.appendChild(div);
+    });
 }
