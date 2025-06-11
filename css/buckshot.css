@@ -46,6 +46,10 @@
     cursor: pointer;
     user-select: none;
 }
+#dealerItems .item {
+    cursor: default;
+    pointer-events: none;
+}
 .magazine {
     display: flex;
     margin-top: 20px;
