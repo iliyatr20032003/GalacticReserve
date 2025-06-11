@@ -447,16 +447,8 @@ function updateItems(el,items,interactive=false) {
             if(it==='Expired Medicine') {
                 div.addEventListener('click',()=>{
                     if(game.player.items[i]!=='Expired Medicine') return;
-                    if(game.random()<0.5){
-                        game.player.hp += 2;
-                        game.player.hp = Math.min(game.player.hp, game.player.maxHp);
-                        setStatus('Expired Medicine healed you.');
-                    }else{
-                        game.player.hp -= 1;
-                        setStatus('Expired Medicine hurt you.');
-                    }
                     game.player.items.splice(i,1);
-                    game.updateUI();
+                    applyItemEffect(game.player,'Expired Medicine');
                 });
             }
         }
@@ -591,6 +583,9 @@ function applyItemEffect(user,item){
             break;
     }
     game.updateUI();
+    if(user.hp <= 0){
+        game.endRound(opponent);
+    }
 }
 
 let adrenalineInterval;
