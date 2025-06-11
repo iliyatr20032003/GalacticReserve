@@ -2,23 +2,23 @@
 
 *(draft for HTML5 version inspired by Mike Klubnika's game)*
 
-## 1. Game Overview
+## 1. Game Overview *(partially implemented)*
 Buckshot Roulette is a horror-themed variant of Russian roulette played with a shotgun. The goal is to survive three consecutive rounds while reducing opponents to zero charges (HP). The browser version should support both single-player (against an AI Dealer) and multiplayer (up to four players).
 
-## 2. Round Structure
+## 2. Round Structure *(partially implemented)*
 Each round goes through several phases:
 
 | Phase | Description | Browser Considerations |
 |-------|-------------|------------------------|
-| **Item phase** | Each participant receives 2–5 random items (max 8 slots). | Inventory UI with drag&drop or "use" button. |
-| **Health phase** | Overall HP for the round (2–4) is shown via a pulse meter. | Track `maxCharges` and `currentCharges` for all players. |
-| **Loading phase** | Dealer displays 2–8 shells then shuffles them. If even: half live, half blank. If odd: difference exactly 1. | Function `generateLoad(size)` implements distribution. |
-| **Main phase** | Players take turns. On their turn they may use items, then fire the shotgun at themselves or a target. A blank self-shot keeps the turn, anything else ends it. | Finite-state machine (PlayerTurn → DealerTurn → …) with life checks and automatic reload when magazine empty. |
+| **Item phase** | Each participant receives 2–5 random items (max 8 slots). | Inventory UI with drag&drop or "use" button. *(partially)* |
+| **Health phase** | Overall HP for the round (2–4) is shown via a pulse meter. | Track `maxCharges` and `currentCharges` for all players. *(partially)* |
+| **Loading phase** | Dealer displays 2–8 shells then shuffles them. If even: half live, half blank. If odd: difference exactly 1. | Function `generateLoad(size)` implements distribution. *(fully)* |
+| **Main phase** | Players take turns. On their turn they may use items, then fire the shotgun at themselves or a target. A blank self-shot keeps the turn, anything else ends it. | Finite-state machine (PlayerTurn → DealerTurn → …) with life checks and automatic reload when magazine empty. *(partially)* |
 
 The round ends when a player’s HP reaches 0 or the magazine is empty. Winning three rounds ends Story mode; in Double or Nothing players may continue for double the money.
 
 ## 3. Items
-### 3.1 Basic items
+### 3.1 Basic items *(partially implemented)*
 | Item | Effect |
 |------|--------|
 | **Cigarette Pack** | +1 HP. |
@@ -41,7 +41,7 @@ The round ends when a player’s HP reaches 0 or the magazine is empty. Winning 
 | **Jammer** | Targeted player skips turn. |
 | **Remote** | Reverses turn order. |
 
-## 4. Shell Generation
+## 4. Shell Generation *(fully implemented)*
 The shotgun magazine size ranges 2–8 with at least one live and one blank. Algorithm:
 ```text
 if even: lives = blanks = size/2
@@ -59,7 +59,7 @@ The single-player Dealer follows deterministic rules:
 
 Implement as a simple rule-based finite-state machine that tracks known shells and processes the above rules in order.
 
-## 6. Architecture Notes
+## 6. Architecture Notes *(partially implemented)*
 ### Core Entities
 - `GameState` – mode, phase, round, bank, player order.
 - `Player` – id, name, hp, inventory[]
