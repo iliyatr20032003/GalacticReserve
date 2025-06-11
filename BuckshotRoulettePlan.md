@@ -27,6 +27,8 @@ The round ends when a player’s HP reaches 0 or the magazine is empty. Winning 
 | **Beer** | Discards the current shell. *(fully implemented)* |
 | **Hand Saw** | Shotgun deals x2 damage for the rest of the turn. *(fully implemented)* |
 
+Healing items cannot raise HP above its starting value.
+
 ### 3.2 Double or Nothing + Multiplayer only
 | Item | Effect |
 |------|--------|
