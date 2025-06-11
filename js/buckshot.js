@@ -405,9 +405,11 @@ shootSelf.addEventListener('click',()=>{
     }
     game.setTurn(false);
     const result = game.shoot(game.player, game.player);
-    if(result !== 'blank' &&
-       game.player.hp>0 && game.dealer.hp>0 &&
-       game.current < game.magazine.length) {
+    if(result === 'blank') {
+        // player keeps the turn on a blank
+        if(game.player.hp>0 && game.dealer.hp>0) game.setTurn(true);
+    } else if(game.player.hp>0 && game.dealer.hp>0 &&
+              game.current < game.magazine.length) {
         setTimeout(()=>game.dealerTurn(),game.dealerDelay*1000);
     }
 });
