@@ -30,8 +30,8 @@ The round ends when a player’s HP reaches 0 or the magazine is empty. Winning 
 ### 3.2 Double or Nothing + Multiplayer only
 | Item | Effect |
 |------|--------|
-| **Adrenaline** | Steal an item from another player and use it immediately. |
-| **Burner Phone** | Reveals type and position of a random future shell. |
+| **Adrenaline** | Steal an item from another player and use it immediately. *(fully implemented)* |
+| **Burner Phone** | Reveals type and position of a random future shell. *(fully implemented)* |
 | **Inverter** | Converts current shell: blank ↔ live. *(fully implemented)* |
 | **Expired Medicine** | 50% chance +2 HP, 50% chance −1 HP. *(fully implemented)* |
 These items appear only in Double or Nothing mode.
@@ -56,7 +56,7 @@ The single-player Dealer follows deterministic rules:
 - Uses **Magnifying Glass** when the shell is unknown.
 - Uses **Inverter** if facing a blank and wants to attack.
 - Uses **Handcuffs** whenever available.
-- Uses **Adrenaline** to steal useful items it lacks (e.g., Cigarette Pack).
+- Uses **Adrenaline** to steal useful items it lacks (e.g., Cigarette Pack). *(implemented)*
 - Fires a blank at themselves when it’s a safe pass.
 - Uses **Hand Saw** before attacking for double damage.
 
