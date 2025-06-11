@@ -30,7 +30,7 @@
     background: red;
     height: 100%;
     width: 100%;
-    transition: width 0.3s;
+    transition: background 0.3s;
 }
 .items {
     margin-top: 10px;
