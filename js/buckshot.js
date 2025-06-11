@@ -47,6 +47,7 @@ class Game {
         this.freezeIndicator = false; // freeze shell counter display
         this.cachedLives = 0;
         this.cachedBlanks = 0;
+        this.isPlayerTurn = true; // track whose turn it is
     }
 
     setSeed(seed) {
@@ -62,6 +63,11 @@ class Game {
 
     sleep(ms){
         return new Promise(resolve=>setTimeout(resolve, ms));
+    }
+
+    setTurn(isPlayer){
+        this.isPlayerTurn = isPlayer;
+        this.updateUI();
     }
 
     updateItemPool() {
@@ -90,6 +96,7 @@ class Game {
         this.playerKnown = {};
         this.dealerKnown = {};
         this.freezeIndicator = false;
+        this.isPlayerTurn = true;
         this.updateUI();
         setStatus('Round '+this.round+' started. Your move.');
         enableControls();
@@ -194,10 +201,13 @@ class Game {
     }
 
     async dealerTurn() {
+        this.setTurn(false);
         if(this.dealerSkip) {
             setStatus('Dealer is restrained and loses a turn.');
             this.dealerSkip = false;
             await this.sleep(this.dealerDelay*1000);
+            this.setTurn(true);
+            if(this.player.hp>0 && this.dealer.hp>0) setStatus('Your move.');
             return;
         }
         // restrain player if possible
@@ -284,11 +294,15 @@ class Game {
                 this.updateUI();
                 setStatus('Dealer discards a shell.');
                 await this.sleep(this.dealerDelay*1000);
+                this.setTurn(true);
+                if(this.player.hp>0 && this.dealer.hp>0) setStatus('Your move.');
                 return;
             } else {
                 this.knownShell = null;
                 this.shoot(this.dealer, this.dealer);
                 await this.sleep(this.dealerDelay*1000);
+                this.setTurn(true);
+                if(this.player.hp>0 && this.dealer.hp>0) setStatus('Your move.');
                 return;
             }
         } else {
@@ -303,6 +317,8 @@ class Game {
             }
             this.shoot(this.player, this.dealer);
             await this.sleep(this.dealerDelay*1000);
+            this.setTurn(true);
+            if(this.player.hp>0 && this.dealer.hp>0) setStatus('Your move.');
         }
     }
 }
@@ -379,12 +395,15 @@ if(settingsBtn){
     });
 }
 shootSelf.addEventListener('click',()=>{
+    if(!game.isPlayerTurn) return;
     if(game.playerSkip){
+        game.setTurn(false);
         setStatus('You are restrained and lose a turn.');
         game.playerSkip=false;
         setTimeout(()=>game.dealerTurn(),game.dealerDelay*1000);
         return;
     }
+    game.setTurn(false);
     const result = game.shoot(game.player, game.player);
     if(result !== 'blank' &&
        game.player.hp>0 && game.dealer.hp>0 &&
@@ -393,12 +412,15 @@ shootSelf.addEventListener('click',()=>{
     }
 });
 shootDealer.addEventListener('click',()=>{
+    if(!game.isPlayerTurn) return;
     if(game.playerSkip){
+        game.setTurn(false);
         setStatus('You are restrained and lose a turn.');
         game.playerSkip=false;
         setTimeout(()=>game.dealerTurn(),game.dealerDelay*1000);
         return;
     }
+    game.setTurn(false);
     game.shoot(game.dealer, game.player);
     if(game.player.hp>0 && game.dealer.hp>0) setTimeout(()=>game.dealerTurn(),game.dealerDelay*1000);
 });
@@ -410,7 +432,7 @@ function updateItems(el,items,interactive=false) {
         div.className='item';
         div.textContent=it;
 
-        if(interactive){
+        if(interactive && game.isPlayerTurn){
             if(it==='Cigarette Pack') {
                 div.addEventListener('click',()=>{
                     if(game.player.items[i]!=='Cigarette Pack') return;
