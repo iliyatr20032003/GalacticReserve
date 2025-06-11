@@ -347,7 +347,9 @@ function updateItems(el,items,interactive=false) {
                 div.addEventListener('click',()=>{
                     if(game.player.items[i]!=='Magnifying Glass') return;
                     if(game.current<game.magazine.length) {
-                        setStatus('Next shell is '+game.magazine[game.current].type);
+                        const type = game.magazine[game.current].type;
+                        setStatus('Next shell is '+type);
+                        game.playerKnown[game.current] = type;
                         if(!game.keepMagnify) game.player.items.splice(i,1);
                         game.updateUI();
                     }
@@ -484,7 +486,9 @@ function applyItemEffect(user,item){
             break;
         case 'Magnifying Glass':
             if(game.current < game.magazine.length){
-                setStatus((isPlayer?'Next shell is ':'Dealer sees next shell is ')+game.magazine[game.current].type);
+                const type = game.magazine[game.current].type;
+                setStatus((isPlayer?'Next shell is ':'Dealer sees next shell is ')+type);
+                if(isPlayer) game.playerKnown[game.current] = type; else game.dealerKnown[game.current] = type;
             }
             break;
         case 'Beer':
