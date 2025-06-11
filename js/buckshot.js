@@ -38,6 +38,8 @@ class Game {
         this.animationSpeed = 1;
         this.keepMagnify = false; // debug: keep magnifying glass after use
         this.keepCigarette = false; // debug: keep cigarette pack after use
+        this.playerKnown = {}; // indices of shells revealed to the player
+        this.dealerKnown = {}; // indices of shells revealed to the dealer
     }
 
     setSeed(seed) {
@@ -73,6 +75,8 @@ class Game {
         this.knownShell = null;
         this.dealerSkip = false;
         this.playerSkip = false;
+        this.playerKnown = {};
+        this.dealerKnown = {};
         this.updateUI();
         setStatus('Round started. Your move.');
         enableControls();
@@ -393,12 +397,19 @@ function updateItems(el,items,interactive=false) {
     });
 }
 
-function updateMagazine(el,mag,idx) {
+function updateMagazine(el,mag,idx,known) {
     el.innerHTML='';
     mag.forEach((s,i)=>{
         const div=document.createElement('div');
-        div.className='shell '+(i<idx?'' : 'unknown');
-        if(i<idx) div.classList.add(s.type);
+        div.classList.add('shell');
+        if(i===idx) div.classList.add('current');
+        if(i<idx) {
+            div.classList.add(s.type);
+        } else if(known && known[i]) {
+            div.classList.add(known[i]);
+        } else {
+            div.classList.add('unknown');
+        }
         el.appendChild(div);
     });
 }
@@ -427,7 +438,7 @@ Game.prototype.updateUI=function(){
     }
     updateItems(document.getElementById('playerItems'),this.player.items,true);
     updateItems(document.getElementById('dealerItems'),this.dealer.items,false);
-    updateMagazine(document.getElementById('magazine'),this.magazine,this.current);
+    updateMagazine(document.getElementById('magazine'),this.magazine,this.current,this.playerKnown);
 };
 
 function applyItemEffect(user,item){
@@ -471,11 +482,12 @@ function applyItemEffect(user,item){
                 setStatus((isPlayer?'Expired Medicine hurt you.':'Dealer is hurt by Expired Medicine.'));
             }
             break;
-        case 'Burner Phone':
-            if(game.current < game.magazine.length-1){
-                const pos = game.current + 1 + Math.floor(game.random()*(game.magazine.length - game.current -1));
-                const type = game.magazine[pos].type;
+       case 'Burner Phone':
+           if(game.current < game.magazine.length-1){
+               const pos = game.current + 1 + Math.floor(game.random()*(game.magazine.length - game.current -1));
+               const type = game.magazine[pos].type;
                 setStatus((isPlayer?'Burner Phone':'Dealer\'s Burner Phone')+' reveals shell '+(pos+1)+' is '+type+'.');
+                if(isPlayer) game.playerKnown[pos] = type; else game.dealerKnown[pos] = type;
             }else{
                 setStatus(isPlayer?'No future shells to scan.':'Dealer finds no future shells.');
             }

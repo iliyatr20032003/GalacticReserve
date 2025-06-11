@@ -68,6 +68,10 @@
     background: lightgray;
 }
 
+.shell.current {
+    outline: 1px solid rgba(255,255,255,0.3);
+}
+
 .bs-container.colorblind .shell.live {
     background: repeating-linear-gradient(
         45deg,
