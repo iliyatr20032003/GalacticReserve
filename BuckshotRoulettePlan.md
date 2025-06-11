@@ -11,7 +11,7 @@ Each round goes through several phases:
 | Phase | Description | Browser Considerations |
 |-------|-------------|------------------------|
 | **Item phase** | Each participant receives 2–5 random items (max 8 slots). | Inventory UI with drag&drop or "use" button. *(partially)* |
-| **Health phase** | Overall HP for the round (2–4) is shown via a pulse meter. | Track `maxCharges` and `currentCharges` for all players. *(partially - HP randomised)* |
+| **Health phase** | Overall HP for the round (2–4) is shown via a pulse meter. | Track `maxCharges` and `currentCharges` for all players. *(fully implemented)* |
 | **Loading phase** | Dealer displays 2–8 shells then shuffles them. If even: half live, half blank. If odd: difference exactly 1. | Function `generateLoad(size)` implements distribution. *(fully)* |
 | **Main phase** | Players take turns. On their turn they may use items, then fire the shotgun at themselves or a target. A blank self-shot keeps the turn, anything else ends it. | Finite-state machine (PlayerTurn → DealerTurn → …) with life checks and automatic reload when magazine empty. *(partially)* |
 
@@ -103,7 +103,7 @@ stateDiagram
 
 ## 7. Additional Features
 - Colorblind filter to distinguish shell types. *(fully implemented)*
-- Adjustable animation speed (0.5×–2×).
+- Adjustable animation speed (0.5×–2×). *(fully implemented)*
 - Option to save RNG seed for replays and debugging. *(fully implemented)*
 - Settings modal to toggle colorblind mode and enter RNG seed. *(fully implemented)*
 - Modding API (original uses Godot mods).
