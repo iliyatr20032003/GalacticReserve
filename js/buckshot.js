@@ -465,12 +465,10 @@ Game.prototype.updateUI=function(){
     const pBar=document.getElementById('playerHpBar');
     const dBar=document.getElementById('dealerHpBar');
     if(pBar){
-        const pct = 100 * this.player.hp / this.player.maxHp;
-        pBar.style.width = Math.max(0, Math.min(100, pct)) + '%';
+        pBar.style.width=(100*this.player.hp/this.player.maxHp)+'%';
     }
     if(dBar){
-        const pct = 100 * this.dealer.hp / this.dealer.maxHp;
-        dBar.style.width = Math.max(0, Math.min(100, pct)) + '%';
+        dBar.style.width=(100*this.dealer.hp/this.dealer.maxHp)+'%';
     }
     updateItems(document.getElementById('playerItems'),this.player.items,true);
     updateItems(document.getElementById('dealerItems'),this.dealer.items,false);
