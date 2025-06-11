@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buckshot Roulette</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/buckshot.css">
+    <script src="../js/buckshot.js" defer></script>
+</head>
+<body>
+    <div class="nav-bar">
+        <div class="logo-container">
+            <div class="logo"></div>
+        </div>
+        <div class="bank-name" onclick="location.href='../index.html'">Galactic Reserve</div>
+        <div class="nav-item" onclick="location.href='../index.html'">Back to the Strategies</div>
+    </div>
+    <div class="bs-container">
+        <h1>Buckshot Roulette</h1>
+        <div class="status" id="status">Press Start to begin.</div>
+        <div class="controls">
+            <button class="baton" id="startBtn">Start Round</button>
+            <button class="baton" id="shootSelf" disabled>Shoot Self</button>
+            <button class="baton" id="shootDealer" disabled>Shoot Dealer</button>
+        </div>
+        <div class="players">
+            <div class="player" id="player">
+                <h2>Player</h2>
+                <div>HP: <span id="playerHp">3</span></div>
+                <div id="playerItems" class="items"></div>
+            </div>
+            <div class="player" id="dealer">
+                <h2>Dealer</h2>
+                <div>HP: <span id="dealerHp">3</span></div>
+                <div id="dealerItems" class="items"></div>
+            </div>
+        </div>
+        <div class="magazine" id="magazine"></div>
+    </div>
+</body>
+</html>

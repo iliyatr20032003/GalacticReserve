@@ -1,0 +1,51 @@
+.bs-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+}
+.controls {
+    margin: 10px;
+}
+.players {
+    display: flex;
+    gap: 40px;
+}
+.player {
+    border: 1px solid #555;
+    padding: 10px;
+    border-radius: 5px;
+    width: 150px;
+    text-align: center;
+}
+.items {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+}
+.item {
+    border: 1px solid #888;
+    padding: 2px 5px;
+    border-radius: 3px;
+    cursor: pointer;
+    user-select: none;
+}
+.magazine {
+    display: flex;
+    margin-top: 20px;
+    gap: 5px;
+}
+.shell {
+    width: 20px;
+    height: 40px;
+    border-radius: 3px;
+    background: gray;
+}
+.shell.live {
+    background: red;
+}
+.shell.blank {
+    background: lightgray;
+}
