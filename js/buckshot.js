@@ -177,6 +177,7 @@ class Game {
         const cigIndex = this.dealer.items.indexOf('Cigarette Pack');
         if(this.dealer.hp <= 2 && cigIndex > -1) {
             this.dealer.hp++;
+            this.dealer.hp = Math.min(this.dealer.hp, this.dealer.maxHp);
             this.dealer.items.splice(cigIndex,1);
             this.updateUI();
             setStatus('Dealer uses a Cigarette Pack.');
@@ -186,6 +187,7 @@ class Game {
             this.dealer.items.splice(medIndex,1);
             if(this.random() < 0.5) {
                 this.dealer.hp += 2;
+                this.dealer.hp = Math.min(this.dealer.hp, this.dealer.maxHp);
                 setStatus('Dealer heals with Expired Medicine.');
             } else {
                 this.dealer.hp -= 1;
@@ -344,6 +346,7 @@ function updateItems(el,items,interactive=false) {
                 div.addEventListener('click',()=>{
                     if(game.player.items[i]!=='Cigarette Pack') return;
                     game.player.hp++;
+                    game.player.hp = Math.min(game.player.hp, game.player.maxHp);
                     if(!game.keepCigarette) game.player.items.splice(i,1);
                     game.updateUI();
                 });
@@ -417,6 +420,7 @@ function updateItems(el,items,interactive=false) {
                     if(game.player.items[i]!=='Expired Medicine') return;
                     if(game.random()<0.5){
                         game.player.hp += 2;
+                        game.player.hp = Math.min(game.player.hp, game.player.maxHp);
                         setStatus('Expired Medicine healed you.');
                     }else{
                         game.player.hp -= 1;
@@ -485,6 +489,7 @@ function applyItemEffect(user,item){
     switch(item){
         case 'Cigarette Pack':
             user.hp++;
+            user.hp = Math.min(user.hp, user.maxHp);
             break;
         case 'Handcuffs':
             if(isPlayer) game.dealerSkip = true; else game.playerSkip = true;
@@ -516,6 +521,7 @@ function applyItemEffect(user,item){
         case 'Expired Medicine':
             if(game.random()<0.5){
                 user.hp += 2;
+                user.hp = Math.min(user.hp, user.maxHp);
                 setStatus((isPlayer?'Expired Medicine healed you.':'Dealer heals with Expired Medicine.'));
             }else{
                 user.hp -= 1;
