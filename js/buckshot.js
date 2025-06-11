@@ -20,6 +20,8 @@ class Game {
         this.dealer = new Player('Dealer');
         this.magazine = [];
         this.current = 0;
+        this.round = 0;
+        this.bank = 0;
         this.basicItems = [
             "Cigarette Pack",
             "Handcuffs",
@@ -59,6 +61,7 @@ class Game {
     }
 
     startRound() {
+        this.round++;
         const seedInput = document.getElementById('seedInput');
         if(seedInput && seedInput.value) this.setSeed(Number(seedInput.value));
         const hp = 2 + Math.floor(this.random() * 3); // 2-4
@@ -78,8 +81,9 @@ class Game {
         this.playerKnown = {};
         this.dealerKnown = {};
         this.updateUI();
-        setStatus('Round started. Your move.');
+        setStatus('Round '+this.round+' started. Your move.');
         enableControls();
+        startBtn.textContent = 'Restart Round';
     }
 
     randomItems() {
@@ -110,6 +114,26 @@ class Game {
         return shells;
     }
 
+    endRound(winner) {
+        disableControls();
+        if(winner === this.player) {
+            this.bank += this.player.hp;
+        }
+        if(this.doubleMode && this.round % 3 === 0) {
+            this.bank *= 2;
+        }
+        this.updateUI();
+        if(!this.doubleMode && this.round >= 3 && winner === this.player) {
+            setStatus('Story complete! Final bank: '+this.bank+'. Start again?');
+            startBtn.textContent = 'Start Round';
+            this.round = 0;
+            this.bank = 0;
+        } else {
+            setStatus((winner===this.player?'You win this round!':'Dealer wins the round!')+' Start next round.');
+            startBtn.textContent = 'Next Round';
+        }
+    }
+
     shoot(target, shooter = target) {
         if(this.current>=this.magazine.length) {
             setStatus('Magazine empty. Start a new round.');
@@ -125,13 +149,12 @@ class Game {
         shooter.damageBoost = 1;
         this.updateUI();
         if(this.player.hp<=0 || this.dealer.hp<=0) {
-            disableControls();
-            setStatus((this.player.hp>0?'You win!':'Dealer wins!')+' Start again?');
+            const winner = this.player.hp>0 ? this.player : this.dealer;
+            this.endRound(winner);
             return;
         }
         if(this.current>=this.magazine.length){
-            disableControls();
-            setStatus('Magazine empty. Start a new round.');
+            this.endRound(this.player.hp>this.dealer.hp?this.player:this.dealer);
         }
     }
 
@@ -439,6 +462,10 @@ Game.prototype.updateUI=function(){
     updateItems(document.getElementById('playerItems'),this.player.items,true);
     updateItems(document.getElementById('dealerItems'),this.dealer.items,false);
     updateMagazine(document.getElementById('magazine'),this.magazine,this.current,this.playerKnown);
+    const roundEl = document.getElementById('roundNum');
+    const bankEl = document.getElementById('bankAmount');
+    if(roundEl) roundEl.textContent = this.round;
+    if(bankEl) bankEl.textContent = this.bank;
 };
 
 function applyItemEffect(user,item){

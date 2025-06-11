@@ -5,7 +5,7 @@
 ## 1. Game Overview *(partially implemented)*
 Buckshot Roulette is a horror-themed variant of Russian roulette played with a shotgun. The goal is to survive three consecutive rounds while reducing opponents to zero charges (HP). The browser version should support both single-player (against an AI Dealer) and multiplayer (up to four players).
 
-## 2. Round Structure *(partially implemented)*
+## 2. Round Structure *(partially implemented – rounds and bank now tracked)*
 Each round goes through several phases:
 
 | Phase | Description | Browser Considerations |
@@ -110,7 +110,7 @@ stateDiagram
 - Settings modal to toggle colorblind mode and enter RNG seed. *(fully implemented)*
 - Toggle for Double or Nothing mode enabling Inverter and Expired Medicine (on by default). *(fully implemented)*
 - Modding API (original uses Godot mods).
-- Scoring: Story uses time and leftover HP as money. Double or Nothing doubles the bank every three rounds; leaderboard via REST API.
+- Scoring: Story uses time and leftover HP as money. Double or Nothing doubles the bank every three rounds; leaderboard via REST API. *(partially implemented – bank and round counter)*
 
 This plan captures the rules, phases, items, AI logic, and architecture necessary to prototype an HTML5 version of **Buckshot Roulette**.
 
