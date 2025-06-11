@@ -137,7 +137,7 @@ class Game {
     shoot(target, shooter = target) {
         if(this.current>=this.magazine.length) {
             setStatus('Magazine empty. Start a new round.');
-            return;
+            return null;
         }
         const shell=this.magazine[this.current++];
         if(shell.type==='live') {
@@ -156,6 +156,7 @@ class Game {
         if(this.current>=this.magazine.length){
             this.endRound(this.player.hp>this.dealer.hp?this.player:this.dealer);
         }
+        return shell.type;
     }
 
     dealerTurn() {
@@ -313,8 +314,12 @@ shootSelf.addEventListener('click',()=>{
         setTimeout(()=>game.dealerTurn(),500/game.animationSpeed);
         return;
     }
-    game.shoot(game.player, game.player);
-    if(game.player.hp>0 && game.dealer.hp>0) setTimeout(()=>game.dealerTurn(),500/game.animationSpeed);
+    const result = game.shoot(game.player, game.player);
+    if(result !== 'blank' &&
+       game.player.hp>0 && game.dealer.hp>0 &&
+       game.current < game.magazine.length) {
+        setTimeout(()=>game.dealerTurn(),500/game.animationSpeed);
+    }
 });
 shootDealer.addEventListener('click',()=>{
     if(game.playerSkip){
