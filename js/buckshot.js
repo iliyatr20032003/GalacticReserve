@@ -38,6 +38,7 @@ class Game {
         this.playerSkip = false; // whether player loses next turn
         this.seed = Date.now();
         this.animationSpeed = 1;
+        this.dealerDelay = 0.5; // delay before dealer acts in seconds
         this.showIndicator = true; // display shell counter
         this.keepMagnify = false; // debug: keep magnifying glass after use
         this.keepCigarette = false; // debug: keep cigarette pack after use
@@ -54,6 +55,10 @@ class Game {
         // simple deterministic PRNG (LCG)
         this.seed = (this.seed * 9301 + 49297) % 233280;
         return this.seed / 233280;
+    }
+
+    sleep(ms){
+        return new Promise(resolve=>setTimeout(resolve, ms));
     }
 
     updateItemPool() {
@@ -181,10 +186,11 @@ class Game {
         return shell.type;
     }
 
-    dealerTurn() {
+    async dealerTurn() {
         if(this.dealerSkip) {
             setStatus('Dealer is restrained and loses a turn.');
             this.dealerSkip = false;
+            await this.sleep(this.dealerDelay*1000);
             return;
         }
         // restrain player if possible
@@ -194,6 +200,7 @@ class Game {
             this.dealer.items.splice(cuffsIndex,1);
             this.updateUI();
             setStatus('Dealer uses Handcuffs on you.');
+            await this.sleep(this.dealerDelay*1000);
         }
         // heal if low hp
         const cigIndex = this.dealer.items.indexOf('Cigarette Pack');
@@ -203,6 +210,7 @@ class Game {
             this.dealer.items.splice(cigIndex,1);
             this.updateUI();
             setStatus('Dealer uses a Cigarette Pack.');
+            await this.sleep(this.dealerDelay*1000);
         }
         const medIndex = this.dealer.items.indexOf('Expired Medicine');
         if(medIndex > -1 && this.dealer.hp < this.dealer.maxHp) {
@@ -216,16 +224,19 @@ class Game {
                 setStatus('Dealer is hurt by Expired Medicine.');
             }
             this.updateUI();
+            await this.sleep(this.dealerDelay*1000);
         }
         const adIndex = this.dealer.items.indexOf('Adrenaline');
         if(adIndex > -1 && this.player.items.length>0){
             this.dealer.items.splice(adIndex,1);
             applyItemEffect(this.dealer,'Adrenaline');
+            await this.sleep(this.dealerDelay*1000);
         }
         const phoneIndex = this.dealer.items.indexOf('Burner Phone');
         if(phoneIndex > -1){
             this.dealer.items.splice(phoneIndex,1);
             applyItemEffect(this.dealer,'Burner Phone');
+            await this.sleep(this.dealerDelay*1000);
         }
         // look ahead if unknown
         if(this.knownShell === null) {
@@ -235,6 +246,7 @@ class Game {
                 this.dealer.items.splice(magIndex,1);
                 this.updateUI();
                 setStatus('Dealer inspects the next shell.');
+                await this.sleep(this.dealerDelay*1000);
             }
         }
         if(this.current >= this.magazine.length) {
@@ -248,6 +260,7 @@ class Game {
             this.dealer.items.splice(invIndex,1);
             this.updateUI();
             setStatus('Dealer inverts the next shell.');
+            await this.sleep(this.dealerDelay*1000);
         }
         if(nextType === 'blank') {
             const beerIndex = this.dealer.items.indexOf('Beer');
@@ -257,10 +270,12 @@ class Game {
                 this.knownShell = null;
                 this.updateUI();
                 setStatus('Dealer discards a shell.');
+                await this.sleep(this.dealerDelay*1000);
                 return;
             } else {
                 this.knownShell = null;
                 this.shoot(this.dealer, this.dealer);
+                await this.sleep(this.dealerDelay*1000);
                 return;
             }
         } else {
@@ -271,8 +286,10 @@ class Game {
                 this.dealer.damageBoost = 2;
                 this.updateUI();
                 setStatus('Dealer sharpens a Hand Saw.');
+                await this.sleep(this.dealerDelay*1000);
             }
             this.shoot(this.player, this.dealer);
+            await this.sleep(this.dealerDelay*1000);
         }
     }
 }
@@ -288,6 +305,8 @@ const keepMagToggle=document.getElementById('keepMagToggle');
 const keepCigToggle=document.getElementById('keepCigToggle');
 const speedRange=document.getElementById('speedRange');
 const speedDisplay=document.getElementById('speedDisplay');
+const delayRange=document.getElementById('delayRange');
+const delayDisplay=document.getElementById('delayDisplay');
 const adrenalineModal=document.getElementById('adrenalineModal');
 const adrenalineItems=document.getElementById('adrenalineItems');
 const adrenalineTimer=document.getElementById('adrenalineTimer');
@@ -318,6 +337,14 @@ if(speedRange){
     });
     if(speedDisplay) speedDisplay.textContent=speedRange.value+'x';
 }
+if(delayRange){
+    delayRange.addEventListener('input',()=>{
+        game.dealerDelay=parseFloat(delayRange.value);
+        if(delayDisplay) delayDisplay.textContent=delayRange.value+'s';
+    });
+    if(delayDisplay) delayDisplay.textContent=delayRange.value+'s';
+    game.dealerDelay=parseFloat(delayRange.value);
+}
 if(doubleModeToggle){
     game.doubleMode = doubleModeToggle.checked;
     doubleModeToggle.addEventListener("change",()=>{
@@ -342,25 +369,25 @@ shootSelf.addEventListener('click',()=>{
     if(game.playerSkip){
         setStatus('You are restrained and lose a turn.');
         game.playerSkip=false;
-        setTimeout(()=>game.dealerTurn(),500/game.animationSpeed);
+        setTimeout(()=>game.dealerTurn(),game.dealerDelay*1000);
         return;
     }
     const result = game.shoot(game.player, game.player);
     if(result !== 'blank' &&
        game.player.hp>0 && game.dealer.hp>0 &&
        game.current < game.magazine.length) {
-        setTimeout(()=>game.dealerTurn(),500/game.animationSpeed);
+        setTimeout(()=>game.dealerTurn(),game.dealerDelay*1000);
     }
 });
 shootDealer.addEventListener('click',()=>{
     if(game.playerSkip){
         setStatus('You are restrained and lose a turn.');
         game.playerSkip=false;
-        setTimeout(()=>game.dealerTurn(),500/game.animationSpeed);
+        setTimeout(()=>game.dealerTurn(),game.dealerDelay*1000);
         return;
     }
     game.shoot(game.dealer, game.player);
-    if(game.player.hp>0 && game.dealer.hp>0) setTimeout(()=>game.dealerTurn(),500/game.animationSpeed);
+    if(game.player.hp>0 && game.dealer.hp>0) setTimeout(()=>game.dealerTurn(),game.dealerDelay*1000);
 });
 
 function updateItems(el,items,interactive=false) {
@@ -510,6 +537,10 @@ Game.prototype.updateUI=function(){
         indicator.textContent=`Live: ${lives} Blank: ${blanks}`;
         indicator.style.display=this.showIndicator?'block':'none';
     }
+    const pcuffs=document.getElementById('playerCuffs');
+    const dcuffs=document.getElementById('dealerCuffs');
+    if(pcuffs) pcuffs.style.display=this.playerSkip?'inline':'none';
+    if(dcuffs) dcuffs.style.display=this.dealerSkip?'inline':'none';
 };
 
 function applyItemEffect(user,item){
