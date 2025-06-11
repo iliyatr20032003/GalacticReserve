@@ -9,6 +9,7 @@ class Player {
         this.name = name;
         this.hp = 3;
         this.items = [];
+        this.damageBoost = 1; // multiplier for next live shot
     }
 }
 
@@ -18,7 +19,7 @@ class Game {
         this.dealer = new Player('Dealer');
         this.magazine = [];
         this.current = 0;
-        this.itemPool = ['Cigarette Pack', 'Handcuffs', 'Magnifying Glass', 'Beer'];
+        this.itemPool = ['Cigarette Pack', 'Handcuffs', 'Magnifying Glass', 'Beer', 'Hand Saw'];
         this.knownShell = null; // dealer knowledge of next shell
         this.dealerSkip = false; // whether dealer loses next turn
     }
@@ -26,6 +27,8 @@ class Game {
     startRound() {
         this.player.hp = 3;
         this.dealer.hp = 3;
+        this.player.damageBoost = 1;
+        this.dealer.damageBoost = 1;
         this.player.items = this.randomItems();
         this.dealer.items = this.randomItems();
         this.magazine = this.generateLoad(4);
@@ -72,10 +75,12 @@ class Game {
         }
         const shell=this.magazine[this.current++];
         if(shell.type==='live') {
-            target.hp--; setStatus(shooter.name+' shot '+target.name+'!');
+            target.hp -= shooter.damageBoost;
+            setStatus(shooter.name+' shot '+target.name+'!');
         } else {
             setStatus(shooter.name+' fired a blank.');
         }
+        shooter.damageBoost = 1;
         this.updateUI();
         if(this.player.hp<=0 || this.dealer.hp<=0) {
             disableControls();
@@ -128,6 +133,13 @@ class Game {
             }
         } else {
             this.knownShell = null;
+            const sawIndex = this.dealer.items.indexOf('Hand Saw');
+            if(sawIndex > -1) {
+                this.dealer.items.splice(sawIndex,1);
+                this.dealer.damageBoost = 2;
+                this.updateUI();
+                setStatus('Dealer sharpens a Hand Saw.');
+            }
             this.shoot(this.player, this.dealer);
         }
     }
@@ -183,6 +195,15 @@ function updateItems(el,items) {
                 game.player.items.splice(i,1);
                 game.updateUI();
                 setStatus('Dealer will miss their next turn.');
+            });
+        }
+        if(it==='Hand Saw') {
+            div.addEventListener('click',()=>{
+                if(game.player.items[i]!=='Hand Saw') return;
+                game.player.damageBoost = 2;
+                game.player.items.splice(i,1);
+                game.updateUI();
+                setStatus('Your next shot will deal double damage.');
             });
         }
         el.appendChild(div);
