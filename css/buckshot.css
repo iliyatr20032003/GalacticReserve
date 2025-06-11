@@ -109,3 +109,12 @@
     left: 20px;
     z-index: 1100;
 }
+
+#adrenalineTimer {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+#adrenalineItems .item {
+    cursor: pointer;
+}
