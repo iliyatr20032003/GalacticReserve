@@ -3,6 +3,7 @@
     flex-direction: column;
     align-items: center;
     margin-top: 20px;
+    gap: 16px;
 }
 .controls {
     margin: 10px;
@@ -32,6 +33,37 @@
     border: 1px solid #555;
     margin: 4px auto;
     position: relative;
+}
+.scene-wrap {
+    width: min(900px, 90vw);
+    height: clamp(280px, 42vw, 420px);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    background: radial-gradient(circle at top, rgba(32, 66, 82, 0.8), rgba(4, 8, 16, 0.95));
+    position: relative;
+    overflow: hidden;
+}
+
+#buckshotScene {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.scene-hud {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    display: grid;
+    gap: 4px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: rgba(5, 10, 18, 0.75);
+    border: 1px solid rgba(120, 200, 255, 0.25);
+    color: #e0f2ff;
+    font-size: 14px;
+    letter-spacing: 0.02em;
 }
 .hp-fill {
     background: red;
