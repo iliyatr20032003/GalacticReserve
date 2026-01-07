@@ -176,6 +176,7 @@ class Game {
         }
         const shell=this.magazine[this.current++];
         this.freezeIndicator = false;
+        triggerShot();
         if(shell.type==='live') {
             target.hp -= shooter.damageBoost;
             if(target.hp < 0) target.hp = 0;
@@ -562,6 +563,10 @@ function disableControls() {
 }
 function setStatus(text){
     document.getElementById('status').textContent=text;
+    const sceneStatus = document.getElementById('sceneStatus');
+    if(sceneStatus){
+        sceneStatus.textContent = text;
+    }
 }
 Game.prototype.updateUI=function(){
     document.getElementById('playerHp').textContent=this.player.hp;
@@ -601,6 +606,7 @@ Game.prototype.updateUI=function(){
     const dcuffs=document.getElementById('dealerCuffs');
     if(pcuffs) pcuffs.style.display=this.playerSkip>0?'inline':'none';
     if(dcuffs) dcuffs.style.display=this.dealerSkip>0?'inline':'none';
+    updateSceneWithGame();
 };
 
 function applyItemEffect(user,item){
@@ -717,3 +723,413 @@ function showAdrenalineMenu(user, opponent){
         adrenalineItems.appendChild(div);
     });
 }
+
+const sceneState = {
+    ready: false,
+    shotgun: null,
+    muzzleFlash: null,
+    dealerHead: null,
+    shellsGroup: null,
+    recoil: 0,
+    flashTimer: 0
+};
+
+function triggerShot(){
+    if(!sceneState.ready) return;
+    sceneState.recoil = 0.25;
+    sceneState.flashTimer = 0.15;
+}
+
+function updateSceneWithGame(){
+    if(!sceneState.ready || !sceneState.shellsGroup) return;
+    const remaining = game.magazine.length - game.current;
+    sceneState.shellsGroup.children.forEach((shell, index)=>{
+        shell.visible = index < Math.min(remaining, sceneState.shellsGroup.children.length);
+    });
+}
+
+function initBuckshotScene(){
+    if(!window.THREE) return;
+    const canvas = document.getElementById('buckshotScene');
+    if(!canvas) return;
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.Fog(0x0d0707, 8, 22);
+
+    const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: true,
+        alpha: true
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.9;
+
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    camera.position.set(0, 4, 9);
+
+    const ambient = new THREE.AmbientLight(0x5a3b3b, 0.6);
+    scene.add(ambient);
+
+    const keyLight = new THREE.DirectionalLight(0xffc4a1, 1.2);
+    keyLight.position.set(3, 6, 4);
+    scene.add(keyLight);
+
+    const rimLight = new THREE.PointLight(0xff6d6d, 0.6, 20);
+    rimLight.position.set(-4, 3, -3);
+    scene.add(rimLight);
+
+    const roomGroup = new THREE.Group();
+    scene.add(roomGroup);
+
+    const wallTexture = createTiledTexture('#4a3a34', '#2b1d1d', 40);
+    const floorTexture = createTiledTexture('#3a2f2a', '#151010', 32);
+    const ceilingTexture = createTiledTexture('#4f3f39', '#1e1414', 36);
+
+    const wallMat = new THREE.MeshStandardMaterial({
+        map: wallTexture,
+        roughness: 0.95,
+        metalness: 0.05
+    });
+    const floorMat = new THREE.MeshStandardMaterial({
+        map: floorTexture,
+        roughness: 0.85,
+        metalness: 0.1
+    });
+    const ceilingMat = new THREE.MeshStandardMaterial({
+        map: ceilingTexture,
+        roughness: 0.9,
+        metalness: 0.05
+    });
+
+    const roomSize = 12;
+    const wallGeo = new THREE.BoxGeometry(roomSize, 6, 0.4);
+    const backWall = new THREE.Mesh(wallGeo, wallMat);
+    backWall.position.set(0, 2.8, -5);
+    roomGroup.add(backWall);
+
+    const leftWall = new THREE.Mesh(wallGeo, wallMat);
+    leftWall.rotation.y = Math.PI / 2;
+    leftWall.position.set(-5.8, 2.8, 0);
+    roomGroup.add(leftWall);
+
+    const rightWall = new THREE.Mesh(wallGeo, wallMat);
+    rightWall.rotation.y = -Math.PI / 2;
+    rightWall.position.set(5.8, 2.8, 0);
+    roomGroup.add(rightWall);
+
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(roomSize, roomSize), floorMat);
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = 0;
+    roomGroup.add(floor);
+
+    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(roomSize, roomSize), ceilingMat);
+    ceiling.rotation.x = Math.PI / 2;
+    ceiling.position.y = 5.6;
+    roomGroup.add(ceiling);
+
+    const tableTexture = createGrimeTexture('#4c3e31', '#2a1c16');
+    const tableMat = new THREE.MeshStandardMaterial({
+        map: tableTexture,
+        roughness: 0.8,
+        metalness: 0.2
+    });
+    const table = new THREE.Mesh(new THREE.BoxGeometry(6.8, 0.4, 4.2), tableMat);
+    table.position.set(0, 1.1, 0.2);
+    scene.add(table);
+
+    const tableTop = new THREE.Mesh(
+        new THREE.BoxGeometry(6.4, 0.12, 3.8),
+        new THREE.MeshStandardMaterial({
+            map: createGrimeTexture('#5b5441', '#2e2a20'),
+            roughness: 0.75,
+            metalness: 0.05
+        })
+    );
+    tableTop.position.set(0, 1.32, 0.2);
+    scene.add(tableTop);
+
+    const feltLines = new THREE.Group();
+    const lineMat = new THREE.MeshBasicMaterial({ color: 0xf2e6d1 });
+    const lineGeo = new THREE.PlaneGeometry(5.2, 0.05);
+    const line1 = new THREE.Mesh(lineGeo, lineMat);
+    line1.rotation.x = -Math.PI / 2;
+    line1.position.set(0, 1.39, 0.2);
+    const line2 = line1.clone();
+    line2.rotation.z = Math.PI / 2;
+    const centerCircle = new THREE.Mesh(
+        new THREE.RingGeometry(1.2, 1.25, 64),
+        lineMat
+    );
+    centerCircle.rotation.x = -Math.PI / 2;
+    centerCircle.position.set(0, 1.39, 0.2);
+    feltLines.add(line1, line2, centerCircle);
+    scene.add(feltLines);
+
+    const shotgun = new THREE.Group();
+    const barrelMat = new THREE.MeshStandardMaterial({
+        color: 0x2b2422,
+        roughness: 0.55,
+        metalness: 0.35
+    });
+    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.09, 4.6, 26), barrelMat);
+    barrel.rotation.z = Math.PI / 2;
+    barrel.position.set(0.6, 1.6, 0.35);
+    shotgun.add(barrel);
+
+    const barrelBand = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.2, 18), barrelMat);
+    barrelBand.rotation.z = Math.PI / 2;
+    barrelBand.position.set(0.1, 1.6, 0.35);
+    shotgun.add(barrelBand);
+
+    const pump = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.22, 0.36), new THREE.MeshStandardMaterial({
+        color: 0x5a3a2a,
+        roughness: 0.8,
+        metalness: 0.05
+    }));
+    pump.position.set(0.1, 1.55, 0.35);
+    shotgun.add(pump);
+
+    const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.26, 0.42), barrelMat);
+    receiver.position.set(-0.4, 1.56, 0.35);
+    shotgun.add(receiver);
+
+    const stock = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.32, 0.45), new THREE.MeshStandardMaterial({
+        color: 0x4b2f23,
+        roughness: 0.85,
+        metalness: 0.05
+    }));
+    stock.position.set(-1.6, 1.52, 0.35);
+    shotgun.add(stock);
+
+    const grip = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.5, 0.32), new THREE.MeshStandardMaterial({
+        color: 0x3a261d,
+        roughness: 0.9,
+        metalness: 0.05
+    }));
+    grip.position.set(-0.8, 1.35, 0.35);
+    shotgun.add(grip);
+
+    shotgun.rotation.y = -0.35;
+    shotgun.position.set(0.2, 0.25, -0.15);
+    scene.add(shotgun);
+
+    const shellsGroup = new THREE.Group();
+    const shellMat = new THREE.MeshStandardMaterial({ color: 0x8d3a2a, roughness: 0.6 });
+    for(let i=0;i<3;i++){
+        const shell = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.6, 16), shellMat);
+        shell.rotation.z = Math.PI / 2;
+        shell.position.set(-0.4 + i * 0.6, 1.55, -0.6);
+        shellsGroup.add(shell);
+    }
+    scene.add(shellsGroup);
+
+    const dealer = new THREE.Group();
+    const dealerMat = new THREE.MeshStandardMaterial({
+        color: 0x0d0b0b,
+        roughness: 1,
+        metalness: 0
+    });
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 1.0, 2.4, 20), dealerMat);
+    body.position.set(0, 2.6, -2.4);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.52, 24, 24), new THREE.MeshStandardMaterial({
+        map: createDealerFaceTexture(),
+        roughness: 0.8,
+        metalness: 0
+    }));
+    head.position.set(0, 3.95, -2.4);
+    const shoulders = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.5, 0.8), dealerMat);
+    shoulders.position.set(0, 3.4, -2.4);
+    dealer.add(body, head, shoulders);
+    scene.add(dealer);
+
+    const dealerHands = new THREE.Group();
+    const handMat = new THREE.MeshStandardMaterial({ color: 0x9a6f5a, roughness: 0.7 });
+    const leftHand = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 16), handMat);
+    leftHand.position.set(-0.4, 2.1, -1.1);
+    const rightHand = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 16), handMat);
+    rightHand.position.set(0.4, 2.1, -1.1);
+    dealerHands.add(leftHand, rightHand);
+    scene.add(dealerHands);
+
+    const lightPanel = new THREE.Mesh(
+        new THREE.BoxGeometry(2.8, 0.2, 1),
+        new THREE.MeshStandardMaterial({ color: 0x1a1414, roughness: 0.6 })
+    );
+    lightPanel.position.set(0, 5.1, 0);
+    scene.add(lightPanel);
+
+    const panelLight = new THREE.PointLight(0xffd6b5, 0.6, 12);
+    panelLight.position.set(0, 5, 0);
+    scene.add(panelLight);
+
+    const muzzleFlash = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.8, 0.5),
+        new THREE.MeshBasicMaterial({ color: 0xffe3b1, transparent: true, opacity: 0 })
+    );
+    muzzleFlash.position.set(2.6, 1.6, 0.35);
+    muzzleFlash.rotation.y = -0.35;
+    scene.add(muzzleFlash);
+
+    sceneState.ready = true;
+    sceneState.shotgun = shotgun;
+    sceneState.muzzleFlash = muzzleFlash;
+    sceneState.dealerHead = head;
+    sceneState.shellsGroup = shellsGroup;
+
+    let targetX = 0;
+    let targetY = 0;
+    const sceneWrapper = canvas.parentElement;
+    if(sceneWrapper){
+        sceneWrapper.addEventListener('mousemove', (event)=>{
+            const rect = sceneWrapper.getBoundingClientRect();
+            targetX = ((event.clientX - rect.left) / rect.width - 0.5) * 0.4;
+            targetY = ((event.clientY - rect.top) / rect.height - 0.5) * 0.3;
+        });
+        sceneWrapper.addEventListener('mouseleave', ()=>{
+            targetX = 0;
+            targetY = 0;
+        });
+    }
+
+    const clock = new THREE.Clock();
+    function resize(){
+        const width = canvas.clientWidth;
+        const height = canvas.clientHeight;
+        const renderScale = 0.7;
+        renderer.setSize(width * renderScale, height * renderScale, false);
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function animate(){
+        const elapsed = clock.getElapsedTime();
+        const flicker = 0.9 + Math.sin(elapsed * 4) * 0.05;
+        keyLight.intensity = 1.1 * flicker;
+        rimLight.intensity = 0.5 + Math.sin(elapsed * 3.5 + 1.2) * 0.08;
+        if(sceneState.recoil > 0 && sceneState.shotgun){
+            sceneState.recoil -= 0.02;
+            sceneState.shotgun.position.z = -0.15 - sceneState.recoil;
+            sceneState.shotgun.rotation.x = -sceneState.recoil * 0.6;
+        }else if(sceneState.shotgun){
+            sceneState.shotgun.position.z += (-0.15 - sceneState.shotgun.position.z) * 0.2;
+            sceneState.shotgun.rotation.x *= 0.9;
+        }
+        if(sceneState.flashTimer > 0 && sceneState.muzzleFlash){
+            sceneState.flashTimer -= 0.02;
+            sceneState.muzzleFlash.material.opacity = Math.max(sceneState.flashTimer * 6, 0);
+        }else if(sceneState.muzzleFlash){
+            sceneState.muzzleFlash.material.opacity = 0;
+        }
+        camera.position.x += (targetX - camera.position.x) * 0.05;
+        camera.position.y += (4 + targetY - camera.position.y) * 0.05;
+        camera.lookAt(0, 1.4, 0);
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+    }
+    animate();
+}
+
+function createGrimeTexture(baseColor, grimeColor){
+    const canvas = document.createElement('canvas');
+    const size = 256;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = baseColor;
+    ctx.fillRect(0, 0, size, size);
+    for(let i=0;i<4000;i++){
+        const x = Math.random() * size;
+        const y = Math.random() * size;
+        const alpha = Math.random() * 0.18;
+        ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`;
+        ctx.fillRect(x, y, 2, 2);
+    }
+    for(let i=0;i<1200;i++){
+        const x = Math.random() * size;
+        const y = Math.random() * size;
+        const alpha = Math.random() * 0.12;
+        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+        ctx.fillRect(x, y, 3, 3);
+    }
+    ctx.fillStyle = grimeColor;
+    ctx.globalAlpha = 0.3;
+    ctx.fillRect(0, 0, size, size);
+    ctx.globalAlpha = 1;
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(2, 2);
+    return texture;
+}
+
+function createTiledTexture(baseColor, groutColor, tileSize){
+    const canvas = document.createElement('canvas');
+    const size = 256;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = baseColor;
+    ctx.fillRect(0, 0, size, size);
+    ctx.strokeStyle = groutColor;
+    ctx.lineWidth = 2;
+    for(let x=0;x<=size;x+=tileSize){
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, size);
+        ctx.stroke();
+    }
+    for(let y=0;y<=size;y+=tileSize){
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(size, y);
+        ctx.stroke();
+    }
+    for(let i=0;i<3500;i++){
+        const x = Math.random() * size;
+        const y = Math.random() * size;
+        const alpha = Math.random() * 0.2;
+        ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`;
+        ctx.fillRect(x, y, 2, 2);
+    }
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(2, 2);
+    return texture;
+}
+
+function createDealerFaceTexture(){
+    const canvas = document.createElement('canvas');
+    const width = 256;
+    const height = 256;
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#1b1514';
+    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = '#d8bba3';
+    ctx.beginPath();
+    ctx.ellipse(128, 128, 78, 92, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#0b0707';
+    ctx.beginPath();
+    ctx.ellipse(92, 120, 20, 24, 0, 0, Math.PI * 2);
+    ctx.ellipse(164, 120, 20, 24, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#4a1f1b';
+    ctx.beginPath();
+    ctx.arc(128, 168, 36, 0, Math.PI);
+    ctx.fill();
+    ctx.fillStyle = '#fff2e4';
+    for(let i=0;i<8;i++){
+        ctx.fillRect(100 + i * 8, 168, 4, 10);
+    }
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+    return texture;
+}
+
+initBuckshotScene();
