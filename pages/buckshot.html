@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/buckshot.css">
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" defer></script>
     <script src="../js/buckshot.js" defer></script>
 </head>
 <body>
@@ -19,6 +20,13 @@
     </div>
     <div class="bs-container">
         <h1>Buckshot Roulette</h1>
+        <div class="bs-scene">
+            <canvas id="buckshotScene"></canvas>
+            <div class="scene-overlay">
+                <div class="scene-title">Dealer Room</div>
+                <div class="scene-status" id="sceneStatus">Awaiting next round...</div>
+            </div>
+        </div>
         <div class="info">
             Round: <span id="roundNum">0</span>
             Bank: <span id="bankAmount">0</span>
