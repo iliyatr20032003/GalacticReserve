@@ -183,7 +183,6 @@ class Game {
         } else {
             setStatus(shooter.name+' fired a blank.');
         }
-        triggerShotAnimation(shooter === this.player, shell.type);
         shooter.damageBoost = 1;
         this.updateUI();
         if(this.player.hp<=0 || this.dealer.hp<=0) {
@@ -553,24 +552,6 @@ function updateMagazine(el,mag,idx,known) {
     });
 }
 
-function updateShellRack(el,mag,idx,known) {
-    if(!el) return;
-    el.innerHTML='';
-    mag.forEach((s,i)=>{
-        const div=document.createElement('div');
-        div.classList.add('shell-3d');
-        if(i===idx) div.classList.add('current');
-        if(i<idx) {
-            div.classList.add(s.type,'spent');
-        } else if(known && known[i]) {
-            div.classList.add(known[i]);
-        } else {
-            div.classList.add('unknown');
-        }
-        el.appendChild(div);
-    });
-}
-
 function enableControls() {
     shootSelf.disabled=false;
     shootDealer.disabled=false;
@@ -581,17 +562,6 @@ function disableControls() {
 }
 function setStatus(text){
     document.getElementById('status').textContent=text;
-}
-function triggerShotAnimation(isPlayer, shellType){
-    const scene = document.getElementById('bsScene');
-    if(!scene) return;
-    scene.classList.remove('shot-player','shot-dealer','fire-live','fire-blank');
-    void scene.offsetWidth;
-    scene.classList.add(isPlayer ? 'shot-player' : 'shot-dealer');
-    scene.classList.add(shellType === 'live' ? 'fire-live' : 'fire-blank');
-    setTimeout(()=>{
-        scene.classList.remove('shot-player','shot-dealer','fire-live','fire-blank');
-    }, 350);
 }
 Game.prototype.updateUI=function(){
     document.getElementById('playerHp').textContent=this.player.hp;
@@ -607,7 +577,6 @@ Game.prototype.updateUI=function(){
     updateItems(document.getElementById('playerItems'),this.player.items,true);
     updateItems(document.getElementById('dealerItems'),this.dealer.items,false);
     updateMagazine(document.getElementById('magazine'),this.magazine,this.current,this.playerKnown);
-    updateShellRack(document.getElementById('shellRack'),this.magazine,this.current,this.playerKnown);
     const roundEl = document.getElementById('roundNum');
     const bankEl = document.getElementById('bankAmount');
     if(roundEl) roundEl.textContent = this.round;
@@ -632,11 +601,6 @@ Game.prototype.updateUI=function(){
     const dcuffs=document.getElementById('dealerCuffs');
     if(pcuffs) pcuffs.style.display=this.playerSkip>0?'inline':'none';
     if(dcuffs) dcuffs.style.display=this.dealerSkip>0?'inline':'none';
-    const scene = document.getElementById('bsScene');
-    if(scene){
-        scene.classList.toggle('player-turn', this.isPlayerTurn);
-        scene.classList.toggle('dealer-turn', !this.isPlayerTurn);
-    }
 };
 
 function applyItemEffect(user,item){
