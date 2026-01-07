@@ -1,3 +1,5 @@
+let buckshotScene;
+
 class Shell {
     constructor(type) {
         this.type = type; // 'live' or 'blank'
@@ -68,6 +70,9 @@ class Game {
     setTurn(isPlayer){
         this.isPlayerTurn = isPlayer;
         this.updateUI();
+        if(buckshotScene){
+            buckshotScene.setTurn(isPlayer);
+        }
     }
 
     updateItemPool() {
@@ -182,6 +187,11 @@ class Game {
             setStatus(shooter.name+' shot '+target.name+'!');
         } else {
             setStatus(shooter.name+' fired a blank.');
+        }
+        if(buckshotScene){
+            const shooterSide = shooter === this.player ? 'player' : 'dealer';
+            const targetSide = target === this.player ? 'player' : 'dealer';
+            buckshotScene.registerShot(shell.type, shooterSide, targetSide);
         }
         shooter.damageBoost = 1;
         this.updateUI();
@@ -597,6 +607,23 @@ Game.prototype.updateUI=function(){
         indicator.textContent=`Live: ${lives} Blank: ${blanks}`;
         indicator.style.display=this.showIndicator?'block':'none';
     }
+    const sceneTurn = document.getElementById('sceneTurn');
+    if(sceneTurn){
+        sceneTurn.textContent = this.isPlayerTurn ? 'Your turn' : 'Dealer is aiming...';
+    }
+    const sceneShell = document.getElementById('sceneShell');
+    if(sceneShell){
+        let shellLabel = 'Unknown';
+        if(this.current >= this.magazine.length){
+            shellLabel = 'Reloading';
+        }else if(this.playerKnown[this.current]){
+            shellLabel = this.playerKnown[this.current] === 'live' ? 'Live' : 'Blank';
+        }
+        sceneShell.textContent = shellLabel;
+    }
+    if(buckshotScene){
+        buckshotScene.syncState();
+    }
     const pcuffs=document.getElementById('playerCuffs');
     const dcuffs=document.getElementById('dealerCuffs');
     if(pcuffs) pcuffs.style.display=this.playerSkip>0?'inline':'none';
@@ -716,4 +743,238 @@ function showAdrenalineMenu(user, opponent){
         });
         adrenalineItems.appendChild(div);
     });
+}
+
+class BuckshotScene {
+    constructor(canvas, game){
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.game = game;
+        this.camera = {x: 0, y: 4, z: -18};
+        this.fov = 12;
+        this.scale = 40;
+        this.centerX = 0;
+        this.centerY = 0;
+        this.shotFlash = 0;
+        this.shotType = 'blank';
+        this.shotTarget = 'dealer';
+        this.turnIsPlayer = true;
+        this.lastTime = 0;
+        this.handleResize = this.handleResize.bind(this);
+        this.animate = this.animate.bind(this);
+        this.handleResize();
+        window.addEventListener('resize', this.handleResize);
+        requestAnimationFrame(this.animate);
+    }
+
+    handleResize(){
+        const rect = this.canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        this.canvas.width = rect.width * dpr;
+        this.canvas.height = rect.height * dpr;
+        this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        this.centerX = rect.width / 2;
+        this.centerY = rect.height * 0.72;
+        this.scale = rect.width * 0.08;
+    }
+
+    project(point){
+        const dx = point.x - this.camera.x;
+        const dy = point.y - this.camera.y;
+        const dz = point.z - this.camera.z;
+        const scale = this.fov / dz;
+        return {
+            x: this.centerX + dx * scale * this.scale,
+            y: this.centerY - dy * scale * this.scale,
+            scale
+        };
+    }
+
+    drawPolygon(points, fillStyle, strokeStyle){
+        const ctx = this.ctx;
+        ctx.beginPath();
+        points.forEach((pt, index)=>{
+            if(index === 0) ctx.moveTo(pt.x, pt.y);
+            else ctx.lineTo(pt.x, pt.y);
+        });
+        ctx.closePath();
+        if(fillStyle){
+            ctx.fillStyle = fillStyle;
+            ctx.fill();
+        }
+        if(strokeStyle){
+            ctx.strokeStyle = strokeStyle;
+            ctx.stroke();
+        }
+    }
+
+    drawBox(center, size, colors){
+        const hw = size.w / 2;
+        const hh = size.h / 2;
+        const hd = size.d / 2;
+        const p = {
+            ftl: this.project({x: center.x - hw, y: center.y + hh, z: center.z - hd}),
+            ftr: this.project({x: center.x + hw, y: center.y + hh, z: center.z - hd}),
+            fbl: this.project({x: center.x - hw, y: center.y - hh, z: center.z - hd}),
+            fbr: this.project({x: center.x + hw, y: center.y - hh, z: center.z - hd}),
+            btl: this.project({x: center.x - hw, y: center.y + hh, z: center.z + hd}),
+            btr: this.project({x: center.x + hw, y: center.y + hh, z: center.z + hd}),
+            bbl: this.project({x: center.x - hw, y: center.y - hh, z: center.z + hd}),
+            bbr: this.project({x: center.x + hw, y: center.y - hh, z: center.z + hd})
+        };
+        this.drawPolygon([p.fbl, p.fbr, p.bbr, p.bbl], colors.side, colors.edge);
+        this.drawPolygon([p.fbr, p.ftr, p.btr, p.bbr], colors.sideDark, colors.edge);
+        this.drawPolygon([p.ftr, p.ftl, p.btl, p.btr], colors.top, colors.edge);
+    }
+
+    drawGrid(){
+        const ctx = this.ctx;
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(120, 200, 255, 0.15)';
+        for(let z = 2; z <= 18; z += 1.6){
+            const start = this.project({x: -9, y: 0, z});
+            const end = this.project({x: 9, y: 0, z});
+            ctx.beginPath();
+            ctx.moveTo(start.x, start.y);
+            ctx.lineTo(end.x, end.y);
+            ctx.stroke();
+        }
+        for(let x = -9; x <= 9; x += 1.6){
+            const start = this.project({x, y: 0, z: 2});
+            const end = this.project({x, y: 0, z: 18});
+            ctx.beginPath();
+            ctx.moveTo(start.x, start.y);
+            ctx.lineTo(end.x, end.y);
+            ctx.stroke();
+        }
+    }
+
+    drawShell(position, type, highlight){
+        const colorMap = {
+            live: 'rgba(255, 80, 90, 0.9)',
+            blank: 'rgba(200, 200, 210, 0.9)',
+            unknown: 'rgba(120, 180, 255, 0.85)'
+        };
+        const colors = {
+            top: colorMap[type] || colorMap.unknown,
+            side: 'rgba(30, 40, 60, 0.9)',
+            sideDark: 'rgba(20, 25, 40, 0.9)',
+            edge: highlight ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0)'
+        };
+        this.drawBox(position, {w: 0.45, h: 0.7, d: 0.45}, colors);
+        if(highlight){
+            const glow = this.project({x: position.x, y: position.y + 0.5, z: position.z - 0.3});
+            this.ctx.beginPath();
+            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+            this.ctx.arc(glow.x, glow.y, 6, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
+    }
+
+    setTurn(isPlayer){
+        this.turnIsPlayer = isPlayer;
+    }
+
+    registerShot(type, shooter, target){
+        this.shotFlash = 1;
+        this.shotType = type;
+        this.shotTarget = target;
+        this.turnIsPlayer = shooter === 'player';
+    }
+
+    syncState(){
+        if(!this.game) return;
+        this.turnIsPlayer = this.game.isPlayerTurn;
+    }
+
+    animate(timestamp){
+        const delta = (timestamp - this.lastTime) / 1000 || 0;
+        this.lastTime = timestamp;
+        this.shotFlash = Math.max(0, this.shotFlash - delta * 2.4);
+        this.draw();
+        requestAnimationFrame(this.animate);
+    }
+
+    draw(){
+        const ctx = this.ctx;
+        const game = this.game;
+        const width = this.canvas.getBoundingClientRect().width;
+        const height = this.canvas.getBoundingClientRect().height;
+        ctx.clearRect(0, 0, width, height);
+        const gradient = ctx.createLinearGradient(0, 0, 0, height);
+        gradient.addColorStop(0, 'rgba(20, 40, 60, 0.9)');
+        gradient.addColorStop(1, 'rgba(3, 6, 12, 0.95)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, width, height);
+
+        this.drawGrid();
+
+        this.drawBox({x: 0, y: 0.7, z: 8}, {w: 8.5, h: 0.5, d: 4}, {
+            top: 'rgba(40, 90, 110, 0.95)',
+            side: 'rgba(15, 35, 45, 0.95)',
+            sideDark: 'rgba(10, 25, 30, 0.95)',
+            edge: 'rgba(120, 200, 255, 0.2)'
+        });
+
+        const playerGlow = this.turnIsPlayer ? 'rgba(120, 220, 255, 0.7)' : 'rgba(80, 120, 150, 0.4)';
+        const dealerGlow = !this.turnIsPlayer ? 'rgba(255, 150, 120, 0.7)' : 'rgba(150, 80, 60, 0.4)';
+        this.drawBox({x: -4, y: 2, z: 11}, {w: 1.8, h: 3, d: 1.6}, {
+            top: playerGlow,
+            side: 'rgba(40, 80, 110, 0.8)',
+            sideDark: 'rgba(25, 50, 70, 0.8)',
+            edge: 'rgba(200, 255, 255, 0.2)'
+        });
+        this.drawBox({x: 4, y: 2, z: 11}, {w: 1.8, h: 3, d: 1.6}, {
+            top: dealerGlow,
+            side: 'rgba(120, 60, 40, 0.8)',
+            sideDark: 'rgba(90, 40, 30, 0.8)',
+            edge: 'rgba(255, 200, 180, 0.2)'
+        });
+
+        this.drawBox({x: 0, y: 1.3, z: 6}, {w: 6, h: 0.3, d: 0.8}, {
+            top: 'rgba(60, 60, 70, 0.95)',
+            side: 'rgba(25, 25, 30, 0.95)',
+            sideDark: 'rgba(15, 15, 20, 0.95)',
+            edge: 'rgba(255, 255, 255, 0.1)'
+        });
+
+        const remaining = game.magazine.length - game.current;
+        const shellsToShow = Math.min(remaining, 6);
+        for(let i = 0; i < shellsToShow; i++){
+            const index = game.current + i;
+            let shellType = 'unknown';
+            if(game.playerKnown[index]){
+                shellType = game.playerKnown[index];
+            }else if(index < game.current){
+                shellType = game.magazine[index].type;
+            }
+            const isCurrent = index === game.current;
+            this.drawShell({x: -2 + i * 0.7, y: 1.1, z: 7.8}, shellType, isCurrent);
+        }
+
+        if(this.shotFlash > 0){
+            const flashPos = this.shotTarget === 'player'
+                ? {x: -2.7, y: 1.6, z: 6.8}
+                : {x: 2.7, y: 1.6, z: 6.8};
+            const projected = this.project(flashPos);
+            ctx.beginPath();
+            ctx.fillStyle = this.shotType === 'live'
+                ? `rgba(255, 120, 60, ${this.shotFlash})`
+                : `rgba(180, 220, 255, ${this.shotFlash})`;
+            ctx.arc(projected.x, projected.y, 18 * this.shotFlash, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+        ctx.font = '12px Orbitron, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`Player HP: ${game.player.hp}`, width * 0.25, height - 18);
+        ctx.fillText(`Dealer HP: ${game.dealer.hp}`, width * 0.75, height - 18);
+    }
+}
+
+const sceneCanvas = document.getElementById('buckshotScene');
+if(sceneCanvas){
+    buckshotScene = new BuckshotScene(sceneCanvas, game);
+    buckshotScene.syncState();
 }
